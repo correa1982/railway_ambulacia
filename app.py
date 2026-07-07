@@ -18,13 +18,24 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 Compress(app)
 
-# Inicializar DB siempre (incluso con Gunicorn en Render)
-init_db()
-
 # Usamos os.urandom como respaldo seguro en caso de que falte en el .env
 app.secret_key = os.getenv("SECRET_KEY", os.urandom(24))
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 86400
 app.permanent_session_lifetime = timedelta(minutes=30)
+
+_db_initialized = False
+
+@app.before_request
+def ensure_db_initialized():
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            init_db()
+            _db_initialized = True
+            app.logger.info("Base de datos inicializada correctamente.")
+        except Exception as exc:
+            app.logger.error("No se pudo inicializar la base de datos en el arranque: %s", exc)
+            app.logger.error("Verifique que las variables de entorno de MySQL/DATABASE_URL estén configuradas y que el servicio esté disponible.")
 
 serializer = URLSafeSerializer(app.secret_key)
 
