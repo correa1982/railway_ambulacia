@@ -1,0 +1,6 @@
+
+DATABASE_URL  mysql://root:HZcLGOHeqHkMbCPwJSRRQoWNrHHveKsC@shinkansen.proxy.rlwy.net:45186/railway
+
+conexión a railway
+
+cd ambulacia && gunicorn app:app
