@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory, Response
 from datetime import date, datetime, timedelta
 from functools import lru_cache
 import os
@@ -36,9 +36,11 @@ def ensure_db_initialized():
         except Exception as exc:
             app.logger.error("No se pudo inicializar la base de datos en el arranque: %s", exc)
             app.logger.error("Verifique que las variables de entorno de MySQL/DATABASE_URL estén configuradas y que el servicio esté disponible.")
-
-serializer = URLSafeSerializer(app.secret_key)
-
+        return Response(
+            "<h1>Servicio temporalmente no disponible</h1><p>La base de datos no está accesible en este momento. Intente nuevamente más tarde.</p>",
+            status=503,
+            mimetype='text/html'
+        )
 @app.template_filter('encode_id')
 def encode_id_filter(id_val):
     if not id_val:
@@ -120,6 +122,11 @@ def add_header(response):
 @app.teardown_appcontext
 def shutdown_db(exception=None):
     close_all()
+
+@app.errorhandler(500)
+def handle_internal_error(error):
+    app.logger.error("Internal server error: %s", error)
+    return render_template('500.html', error=error), 500
 
 @app.route("/logo.jpg")
 def serve_logo():
