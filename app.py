@@ -23,6 +23,8 @@ app.secret_key = os.getenv("SECRET_KEY", os.urandom(24))
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 86400
 app.permanent_session_lifetime = timedelta(minutes=30)
 
+serializer = URLSafeSerializer(app.secret_key)
+
 _db_initialized = False
 
 @app.before_request
@@ -36,11 +38,12 @@ def ensure_db_initialized():
         except Exception as exc:
             app.logger.error("No se pudo inicializar la base de datos en el arranque: %s", exc)
             app.logger.error("Verifique que las variables de entorno de MySQL/DATABASE_URL estén configuradas y que el servicio esté disponible.")
-        return Response(
-            "<h1>Servicio temporalmente no disponible</h1><p>La base de datos no está accesible en este momento. Intente nuevamente más tarde.</p>",
-            status=503,
-            mimetype='text/html'
-        )
+            return Response(
+                "<h1>Servicio temporalmente no disponible</h1><p>La base de datos no está accesible en este momento. Intente nuevamente más tarde.</p>",
+                status=503,
+                mimetype='text/html'
+            )
+
 @app.template_filter('encode_id')
 def encode_id_filter(id_val):
     if not id_val:
