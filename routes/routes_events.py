@@ -134,7 +134,7 @@ def register_routes(app):
                 session["usuario"]["nombre"], session["usuario"]["identificacion"],
                 perfil, rm, firma, ahora().strftime("%Y-%m-%d %H:%M:%S")
             ))
-            saved_id = cursor.lastrowid
+            saved_id = conn.lastrowid
             conn.commit()
             conn.close()
             flash("Registro de Atención Colectiva guardado correctamente. Registre los pacientes a continuación.", "success")

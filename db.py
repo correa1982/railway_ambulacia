@@ -3,8 +3,8 @@ import json
 import queue
 import threading
 from datetime import date, datetime
-import pymysql
-import pymysql.cursors
+import psycopg2
+import psycopg2.extras
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 from constants import ASEGURADORAS
@@ -60,7 +60,7 @@ class ConnectionPool:
         if os.getenv("DB_USE_SSL") == "true":
             connect_kwargs["ssl"] = {"ssl_mode": "VERIFY_IDENTITY"}
             
-        return pymysql.connect(**connect_kwargs)
+        return psycopg2.connect(**connect_kwargs)
 
     def acquire(self):
         try:
@@ -109,7 +109,7 @@ def get_pool():
     return _pool
 
 
-class MySQLConnectionWrapper:
+class DBConnectionWrapper:
     def __init__(self):
         self._pool = get_pool()
         self.conn = self._pool.acquire()
@@ -117,8 +117,8 @@ class MySQLConnectionWrapper:
 
     def execute(self, query, params=None):
         cursor = self.conn.cursor()
-        mysql_query = query.replace("?", "%s")
-        cursor.execute(mysql_query, params)
+        pg_query = query.replace("?", "%s")
+        cursor.execute(pg_query, params)
         return cursor
 
     def commit(self):
@@ -133,6 +133,18 @@ class MySQLConnectionWrapper:
                 pass
             self._pool.release(self.conn)
 
+    @property
+    def lastrowid(self):
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT LASTVAL()")
+            row = cursor.fetchone()
+            if row:
+                return list(row.values())[0] if isinstance(row, dict) else row[0]
+            return None
+        except Exception:
+            return None
+
     def cursor(self):
         return self.conn.cursor()
 
@@ -146,7 +158,7 @@ class MySQLConnectionWrapper:
 _db_context = threading.local()
 
 def get_db():
-    wrapper = MySQLConnectionWrapper()
+    wrapper = DBConnectionWrapper()
     if not hasattr(_db_context, 'connections'):
         _db_context.connections = []
     _db_context.connections.append(wrapper)
@@ -173,8 +185,8 @@ def init_db():
             port = int(os.getenv("MYSQL_PORT", 3306))
             db_name = os.getenv("MYSQL_DB", "ambulancia_db")
             
-            temp_conn = pymysql.connect(host=host, user=user, password=password, port=port)
-            temp_conn.cursor().execute(f"CREATE DATABASE IF NOT EXISTS {db_name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+            temp_conn = psycopg2.connect(host=host, user=user, password=password, port=port)
+            temp_conn.cursor().execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
             temp_conn.close()
         except Exception as e:
             print("Could not create database:", e)
@@ -185,15 +197,15 @@ def init_db():
     # Define tables
     conn.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             nombre TEXT NOT NULL,
-            identificacion VARCHAR(255) UNIQUE NOT NULL,
+            identificacion VARCHAR UNIQUE NOT NULL,
             registro_medico TEXT NOT NULL
         )
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS pacientes (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             identificacion_paciente TEXT NOT NULL,
             tipo_documento TEXT NOT NULL,
             primer_apellido TEXT NOT NULL,
@@ -263,13 +275,13 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS configuracion (
-            clave VARCHAR(255) PRIMARY KEY,
-            valor LONGTEXT
+            clave VARCHAR PRIMARY KEY,
+            valor TEXT
         )
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS eventos (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha_inicio TEXT,
             hora_inicio TEXT,
             fecha_finalizacion TEXT,
@@ -291,7 +303,7 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS atencion_vehiculo (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             consecutivo INTEGER,
             pais TEXT,
             departamento TEXT,
@@ -317,7 +329,7 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS atencion_colectiva (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha_inicio TEXT NOT NULL,
             hora_inicio TEXT,
             fecha_finalizacion TEXT,
@@ -337,7 +349,7 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS preoperacional (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             placa_vehiculo TEXT,
@@ -368,7 +380,7 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS checklist_tam (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             placa TEXT,
@@ -390,7 +402,7 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS checklist_tab (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             placa TEXT,
@@ -412,7 +424,7 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS checklist_avanzada (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             evento TEXT,
@@ -429,7 +441,7 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS checklist_pasb (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             ubicacion TEXT,
@@ -449,7 +461,7 @@ def init_db():
     """)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS checklist_pasm (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             ubicacion TEXT,
@@ -471,7 +483,7 @@ def init_db():
     
     conn.execute("""
         CREATE TABLE IF NOT EXISTS checklist_equipos (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             grupo_equipos TEXT,
@@ -487,7 +499,7 @@ def init_db():
     
     conn.execute("""
         CREATE TABLE IF NOT EXISTS calif_atencion (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             primer_nombre TEXT,
@@ -511,7 +523,7 @@ def init_db():
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS segur_paciente (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             fecha TEXT NOT NULL,
             hora TEXT,
             primer_nombre TEXT,
@@ -532,7 +544,7 @@ def init_db():
     
     conn.execute("""
         CREATE TABLE IF NOT EXISTS checklist_items (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             tipo_checklist TEXT NOT NULL,
             categoria TEXT NOT NULL,
             identificador TEXT NOT NULL,
@@ -544,7 +556,7 @@ def init_db():
     
     conn.execute("""
         CREATE TABLE IF NOT EXISTS checklist_categorias (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             tipo_checklist TEXT NOT NULL,
             nombre TEXT NOT NULL,
             activo INTEGER DEFAULT 1
@@ -553,9 +565,9 @@ def init_db():
     
     conn.execute("""
         CREATE TABLE IF NOT EXISTS vehiculos (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            id INTEGER PRIMARY KEY SERIAL,
             tipo TEXT NOT NULL,
-            placa VARCHAR(255) NOT NULL UNIQUE,
+            placa VARCHAR NOT NULL UNIQUE,
             marca TEXT,
             serie TEXT,
             modelo TEXT,
@@ -569,23 +581,23 @@ def init_db():
     
     conn.execute("""
         CREATE TABLE IF NOT EXISTS aseguradoras (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
-            nombre VARCHAR(255) NOT NULL UNIQUE,
+            id INTEGER PRIMARY KEY SERIAL,
+            nombre VARCHAR NOT NULL UNIQUE,
             activo INTEGER DEFAULT 1
         )
     """)
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS aseguradoras_soat (
-            id INTEGER PRIMARY KEY AUTO_INCREMENT,
-            nombre VARCHAR(255) NOT NULL UNIQUE,
+            id INTEGER PRIMARY KEY SERIAL,
+            nombre VARCHAR NOT NULL UNIQUE,
             activo INTEGER DEFAULT 1
         )
     """)
     
     # Dynamic schema migration for usuarios
     cursor = conn.cursor()
-    cursor.execute("DESCRIBE usuarios")
+    cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'usuarios\'")
     columns = [row["Field"] for row in cursor.fetchall()]
     
     if "rol" not in columns:
@@ -643,7 +655,7 @@ def init_db():
                 pass
         
     # Dynamic schema migration for pacientes
-    cursor.execute("DESCRIBE pacientes")
+    cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'pacientes\'")
     pacientes_columns = [row["Field"] for row in cursor.fetchall()]
     
     if "registrado_por_identificacion" not in pacientes_columns:
@@ -703,7 +715,7 @@ def init_db():
     if "diagnostico_cie10" not in pacientes_columns:
         conn.execute("ALTER TABLE pacientes ADD COLUMN diagnostico_cie10 TEXT")
     if "datos_complementarios" not in pacientes_columns:
-        conn.execute("ALTER TABLE pacientes ADD COLUMN datos_complementarios LONGTEXT")
+        conn.execute("ALTER TABLE pacientes ADD COLUMN datos_complementarios TEXT")
     if "atencion_colectiva_id" not in pacientes_columns:
         conn.execute("ALTER TABLE pacientes ADD COLUMN atencion_colectiva_id INTEGER")
     if "finalizado" not in pacientes_columns:
@@ -770,15 +782,15 @@ def init_db():
         conn.execute("ALTER TABLE pacientes ADD COLUMN soat_vigencia TEXT")
 
     # Add indexes for pacientes query performance
-    cursor.execute("SHOW INDEX FROM pacientes")
+    cursor.execute("SELECT indexname AS \"Key_name\" FROM pg_indexes WHERE tablename = \'pacientes\'")
     pacientes_indexes = [row["Key_name"] for row in cursor.fetchall()]
     pacientes_index_map = {
-        "idx_pacientes_fecha_registro": "CREATE INDEX idx_pacientes_fecha_registro ON pacientes(fecha_registro(255))",
-        "idx_pacientes_registrado_por_id": "CREATE INDEX idx_pacientes_registrado_por_id ON pacientes(registrado_por_identificacion(255))",
+        "idx_pacientes_fecha_registro": "CREATE INDEX idx_pacientes_fecha_registro ON pacientes(fecha_registro)",
+        "idx_pacientes_registrado_por_id": "CREATE INDEX idx_pacientes_registrado_por_id ON pacientes(registrado_por_identificacion)",
         "idx_pacientes_finalizado": "CREATE INDEX idx_pacientes_finalizado ON pacientes(finalizado)",
         "idx_pacientes_atencion_colectiva_id": "CREATE INDEX idx_pacientes_atencion_colectiva_id ON pacientes(atencion_colectiva_id)",
-        "idx_pacientes_identificacion_paciente": "CREATE INDEX idx_pacientes_identificacion_paciente ON pacientes(identificacion_paciente(255))",
-        "idx_pacientes_fecha_inicio_atencion": "CREATE INDEX idx_pacientes_fecha_inicio_atencion ON pacientes(fecha_inicio_atencion(255))",
+        "idx_pacientes_identificacion_paciente": "CREATE INDEX idx_pacientes_identificacion_paciente ON pacientes(identificacion_paciente)",
+        "idx_pacientes_fecha_inicio_atencion": "CREATE INDEX idx_pacientes_fecha_inicio_atencion ON pacientes(fecha_inicio_atencion)",
     }
     for idx_name, idx_sql in pacientes_index_map.items():
         if idx_name not in pacientes_indexes:
@@ -789,7 +801,7 @@ def init_db():
  
     # Migration for atencion_colectiva new date fields
     try:
-        cursor.execute("DESCRIBE atencion_colectiva")
+        cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'atencion_colectiva\'")
         ac_columns = [row["Field"] for row in cursor.fetchall()]
         if "fecha_inicio" not in ac_columns:
             conn.execute("ALTER TABLE atencion_colectiva ADD COLUMN fecha_inicio TEXT")
@@ -816,7 +828,7 @@ def init_db():
  
     # Migration for eventos new fields
     try:
-        cursor.execute("DESCRIBE eventos")
+        cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'eventos\'")
         ev_columns = [row["Field"] for row in cursor.fetchall()]
         for col in ["fecha_inicio", "hora_inicio", "fecha_finalizacion", "hora_finalizacion", "firma_coordinador_evento"]:
             if col not in ev_columns:
@@ -824,16 +836,16 @@ def init_db():
     except Exception:
         pass
         
-    # Migration for configuracion valor to LONGTEXT
+    # Migration for configuracion valor to TEXT
     try:
-        conn.execute("ALTER TABLE configuracion MODIFY COLUMN valor LONGTEXT")
+        conn.execute("ALTER TABLE configuracion MODIFY COLUMN valor TEXT")
     except Exception as e:
         print("Migration configuracion valor error:", e)
         pass
 
     # Migration for edad to VARCHAR
     try:
-        conn.execute("ALTER TABLE pacientes MODIFY COLUMN edad VARCHAR(50)")
+        conn.execute("ALTER TABLE pacientes ALTER COLUMN edad TYPE VARCHAR(50)")
     except Exception as e:
         print("Migration edad error:", e)
         pass
@@ -866,21 +878,21 @@ def init_db():
             WHERE identificacion = 'admin'
         """, (json.dumps(["Administrador"]),))
         
-    cursor.execute("DESCRIBE checklist_tam")
+    cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'checklist_tam\'")
     if "datos_json" not in [row["Field"] for row in cursor.fetchall()]:
         try:
             conn.execute("ALTER TABLE checklist_tam ADD COLUMN datos_json TEXT")
         except Exception:
             pass
             
-    cursor.execute("DESCRIBE checklist_tab")
+    cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'checklist_tab\'")
     if "datos_json" not in [row["Field"] for row in cursor.fetchall()]:
         try:
             conn.execute("ALTER TABLE checklist_tab ADD COLUMN datos_json TEXT")
         except Exception:
             pass
  
-    cursor.execute("DESCRIBE checklist_pasb")
+    cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'checklist_pasb\'")
     pasb_cols = [row["Field"] for row in cursor.fetchall()]
     if "datos_json" not in pasb_cols:
         try:
@@ -893,7 +905,7 @@ def init_db():
         except Exception:
             pass
  
-    cursor.execute("DESCRIBE checklist_pasm")
+    cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'checklist_pasm\'")
     pasm_cols = [row["Field"] for row in cursor.fetchall()]
     if "datos_json" not in pasm_cols:
         try:
@@ -906,7 +918,7 @@ def init_db():
         except Exception:
             pass
  
-    cursor.execute("DESCRIBE preoperacional")
+    cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'preoperacional\'")
     preop_cols = [row["Field"] for row in cursor.fetchall()]
     if "datos_json" not in preop_cols:
         try:
@@ -936,7 +948,7 @@ def init_db():
     # ── Checklist tables: add finalizado column if missing ──────────────────────
     for _cl_table in ("checklist_tam", "checklist_tab", "checklist_pasb", "checklist_pasm", "checklist_equipos", "checklist_avanzada"):
         try:
-            cursor = conn.execute(f"SHOW COLUMNS FROM {_cl_table}")
+            cursor = conn.execute(f"SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'{_cl_table}\'")
             _cl_cols = [row["Field"] for row in cursor.fetchall()]
             if "finalizado" not in _cl_cols:
                 conn.execute(f"ALTER TABLE {_cl_table} ADD COLUMN finalizado INTEGER DEFAULT 1")
@@ -955,7 +967,7 @@ def init_db():
 
     # Migration for calif_atencion responsable fields
     try:
-        cursor.execute("DESCRIBE calif_atencion")
+        cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'calif_atencion\'")
         calif_cols = [row["Field"] for row in cursor.fetchall()]
         if "responsable_nombre" not in calif_cols:
             conn.execute("ALTER TABLE calif_atencion ADD COLUMN responsable_nombre TEXT")
@@ -1057,12 +1069,12 @@ def init_db():
     count_aseguradoras = conn.execute("SELECT COUNT(*) as count FROM aseguradoras").fetchone()["count"]
     if count_aseguradoras == 0:
         for a in ASEGURADORAS:
-            conn.execute("INSERT IGNORE INTO aseguradoras (nombre, activo) VALUES (?, 1)", (a,))
+            conn.execute("INSERT INTO aseguradoras (nombre, activo) VALUES (%s, 1) ON CONFLICT DO NOTHING", (a,))
 
     # Dynamic migration for usuarios table
     try:
         cursor = conn.cursor()
-        cursor.execute("DESCRIBE usuarios")
+        cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'usuarios\'")
         usuarios_cols = [row["Field"] for row in cursor.fetchall()]
         if "fecha_validez" not in usuarios_cols:
             conn.execute("ALTER TABLE usuarios ADD COLUMN fecha_validez DATE DEFAULT NULL")
@@ -1071,7 +1083,7 @@ def init_db():
 
     # Dynamic migration for vehiculos table
     try:
-        cursor.execute("DESCRIBE vehiculos")
+        cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'vehiculos\'")
         vehiculos_cols = [row["Field"] for row in cursor.fetchall()]
         if "marca" not in vehiculos_cols:
             conn.execute("ALTER TABLE vehiculos ADD COLUMN marca TEXT")
@@ -1093,7 +1105,7 @@ def init_db():
     # Dynamic migration for atencion_vehiculo table
     try:
         cursor = conn.cursor()
-        cursor.execute("DESCRIBE atencion_vehiculo")
+        cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'atencion_vehiculo\'")
         atencion_vehiculo_cols = [row["Field"] for row in cursor.fetchall()]
         if "equipos_json" not in atencion_vehiculo_cols:
             conn.execute("ALTER TABLE atencion_vehiculo ADD COLUMN equipos_json TEXT")
@@ -1105,7 +1117,7 @@ def init_db():
     # Dynamic migration for checklist_items table
     try:
         cursor = conn.cursor()
-        cursor.execute("DESCRIBE checklist_items")
+        cursor.execute("SELECT column_name AS \"Field\" FROM information_schema.columns WHERE table_name = \'checklist_items\'")
         checklist_items_cols = [row["Field"] for row in cursor.fetchall()]
         if "cantidad" not in checklist_items_cols:
             conn.execute("ALTER TABLE checklist_items ADD COLUMN cantidad INT DEFAULT NULL")
@@ -1113,53 +1125,53 @@ def init_db():
         print("Error al migrar la tabla checklist_items:", e)
 
     # ── Additional indexes for query performance ──
-    cursor.execute("SHOW INDEX FROM preoperacional")
+    cursor.execute("SELECT indexname AS \"Key_name\" FROM pg_indexes WHERE tablename = \'preoperacional\'")
     preop_idx = [row["Key_name"] for row in cursor.fetchall()]
     for name, sql in {
-        "idx_preop_fecha_registro": "CREATE INDEX idx_preop_fecha_registro ON preoperacional(fecha_registro(255))",
-        "idx_preop_registrado_por": "CREATE INDEX idx_preop_registrado_por ON preoperacional(registrado_por_identificacion(255))",
-        "idx_preop_placa": "CREATE INDEX idx_preop_placa ON preoperacional(placa_vehiculo(255))",
+        "idx_preop_fecha_registro": "CREATE INDEX idx_preop_fecha_registro ON preoperacional(fecha_registro)",
+        "idx_preop_registrado_por": "CREATE INDEX idx_preop_registrado_por ON preoperacional(registrado_por_identificacion)",
+        "idx_preop_placa": "CREATE INDEX idx_preop_placa ON preoperacional(placa_vehiculo)",
     }.items():
         if name not in preop_idx:
             try: conn.execute(sql)
             except: pass
 
-    cursor.execute("SHOW INDEX FROM eventos")
+    cursor.execute("SELECT indexname AS \"Key_name\" FROM pg_indexes WHERE tablename = \'eventos\'")
     ev_idx = [row["Key_name"] for row in cursor.fetchall()]
     for name, sql in {
-        "idx_eventos_fecha_registro": "CREATE INDEX idx_eventos_fecha_registro ON eventos(fecha_registro(255))",
-        "idx_eventos_registrado_por": "CREATE INDEX idx_eventos_registrado_por ON eventos(registrado_por_identificacion(255))",
+        "idx_eventos_fecha_registro": "CREATE INDEX idx_eventos_fecha_registro ON eventos(fecha_registro)",
+        "idx_eventos_registrado_por": "CREATE INDEX idx_eventos_registrado_por ON eventos(registrado_por_identificacion)",
     }.items():
         if name not in ev_idx:
             try: conn.execute(sql)
             except: pass
 
-    cursor.execute("SHOW INDEX FROM atencion_vehiculo")
+    cursor.execute("SELECT indexname AS \"Key_name\" FROM pg_indexes WHERE tablename = \'atencion_vehiculo\'")
     av_idx = [row["Key_name"] for row in cursor.fetchall()]
     for name, sql in {
-        "idx_av_fecha_registro": "CREATE INDEX idx_av_fecha_registro ON atencion_vehiculo(fecha_registro(255))",
-        "idx_av_registrado_por": "CREATE INDEX idx_av_registrado_por ON atencion_vehiculo(registrado_por_identificacion(255))",
+        "idx_av_fecha_registro": "CREATE INDEX idx_av_fecha_registro ON atencion_vehiculo(fecha_registro)",
+        "idx_av_registrado_por": "CREATE INDEX idx_av_registrado_por ON atencion_vehiculo(registrado_por_identificacion)",
     }.items():
         if name not in av_idx:
             try: conn.execute(sql)
             except: pass
 
-    cursor.execute("SHOW INDEX FROM atencion_colectiva")
+    cursor.execute("SELECT indexname AS \"Key_name\" FROM pg_indexes WHERE tablename = \'atencion_colectiva\'")
     ac_idx = [row["Key_name"] for row in cursor.fetchall()]
     for name, sql in {
-        "idx_ac_fecha_registro": "CREATE INDEX idx_ac_fecha_registro ON atencion_colectiva(fecha_registro(255))",
-        "idx_ac_registrado_por": "CREATE INDEX idx_ac_registrado_por ON atencion_colectiva(registrado_por_identificacion(255))",
+        "idx_ac_fecha_registro": "CREATE INDEX idx_ac_fecha_registro ON atencion_colectiva(fecha_registro)",
+        "idx_ac_registrado_por": "CREATE INDEX idx_ac_registrado_por ON atencion_colectiva(registrado_por_identificacion)",
         "idx_ac_finalizado": "CREATE INDEX idx_ac_finalizado ON atencion_colectiva(finalizado)",
     }.items():
         if name not in ac_idx:
             try: conn.execute(sql)
             except: pass
 
-    cursor.execute("SHOW INDEX FROM vehiculos")
+    cursor.execute("SELECT indexname AS \"Key_name\" FROM pg_indexes WHERE tablename = \'vehiculos\'")
     veh_idx = [row["Key_name"] for row in cursor.fetchall()]
     for name, sql in {
-        "idx_vehiculos_placa": "CREATE INDEX idx_vehiculos_placa ON vehiculos(placa(255))",
-        "idx_vehiculos_tipo": "CREATE INDEX idx_vehiculos_tipo ON vehiculos(tipo(255))",
+        "idx_vehiculos_placa": "CREATE INDEX idx_vehiculos_placa ON vehiculos(placa)",
+        "idx_vehiculos_tipo": "CREATE INDEX idx_vehiculos_tipo ON vehiculos(tipo)",
     }.items():
         if name not in veh_idx:
             try: conn.execute(sql)

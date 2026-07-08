@@ -290,7 +290,7 @@ function descargarPDF() {
         margin: [8, 8, 8, 8],
         filename: `Atencion_Colectiva_{{ evento.id }}_{{ cfg.get('nombre_institucion','APH')|replace(' ','_') }}.pdf`,
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false, windowWidth: 800 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };

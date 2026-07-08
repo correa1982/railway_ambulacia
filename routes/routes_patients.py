@@ -279,7 +279,7 @@ def register_routes(app, serializer, TIPOS_DOCUMENTO, TIPOS_AFILIACION, ASEGURAD
                         datos_complementarios=db_datos_complementarios,
                     )
                 )
-                paciente_id = cursor.lastrowid
+                paciente_id = conn.lastrowid
             conn.commit()
             conn.close()
 
