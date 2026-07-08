@@ -349,11 +349,11 @@
                 </td>
                 <td style="text-align: center;">
                     {% if left_info.valor == 'SI' %}
-                        <span class="val-si">✓ SI</span>
+                        <span class="val-si">C</span>
                     {% elif left_info.valor == 'NO' %}
-                        <span class="val-no">✗ NO</span>
+                        <span class="val-no">NC</span>
                     {% elif left_info.valor == 'NA' %}
-                        <span class="val-na">N/A</span>
+                        <span class="val-na">NA</span>
                     {% elif left_info.valor %}
                         <span style="background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block;">{{ left_info.valor }}</span>
                     {% else %}
@@ -377,11 +377,11 @@
                     </td>
                     <td style="text-align: center;">
                         {% if right_info.valor == 'SI' %}
-                            <span class="val-si">✓ SI</span>
+                            <span class="val-si">C</span>
                         {% elif right_info.valor == 'NO' %}
-                            <span class="val-no">✗ NO</span>
+                            <span class="val-no">NC</span>
                         {% elif right_info.valor == 'NA' %}
-                            <span class="val-na">N/A</span>
+                            <span class="val-na">NA</span>
                         {% elif right_info.valor %}
                             <span style="background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block;">{{ right_info.valor }}</span>
                         {% else %}
@@ -430,11 +430,11 @@
                 </td>
                 <td style="text-align: center;">
                     {% if info.valor == 'SI' %}
-                        <span class="val-si">✓ SI</span>
+                        <span class="val-si">C</span>
                     {% elif info.valor == 'NO' %}
-                        <span class="val-no">✗ NO</span>
+                        <span class="val-no">NC</span>
                     {% elif info.valor == 'NA' %}
-                        <span class="val-na">N/A</span>
+                        <span class="val-na">NA</span>
                     {% elif info.valor %}
                         <span style="background: #e0e7ff; color: #3730a3; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 800; display: inline-block;">{{ info.valor }}</span>
                     {% else %}
