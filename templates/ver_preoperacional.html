@@ -365,7 +365,7 @@ function descargarPDF() {
         margin: [8, 8, 8, 8],
         filename: "Preoperacional_{{ record.id }}_{{ cfg.get('nombre_institucion','APH')|replace(' ','_') }}.pdf",
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas:  { scale: 2, useCORS: true },
+        html2canvas:  { scale: 2, useCORS: true, windowWidth: 1024 },
         jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
     };
 

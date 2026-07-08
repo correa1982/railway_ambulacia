@@ -95,6 +95,13 @@
     body { background: white; }
 }
 
+@media (max-width: 700px) {
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-wrap table { min-width: 600px; }
+    #checklist-doc { padding: 12px !important; }
+}
+
+
 /* ── Action buttons (height-normalized) ── */
 .action-btn {
     -webkit-appearance: none;
@@ -174,6 +181,7 @@
         </div>
     </div>
 
+<div class="table-wrap">
 <table class="formal-table">
   <tbody>
     <tr>
@@ -234,10 +242,12 @@
     </tr>
   </tbody>
 </table>
+</div>
 
 {% if tipo in ('avanzada', 'tam', 'tab') and datos.get('_integrantes') %}
 <div style="margin-top: 20px;">
     <div class="cat-title">👥 Integrantes de la Tripulación / Personal</div>
+    <div class="table-wrap">
     <table class="result-table">
         <thead>
             <tr>
@@ -260,12 +270,14 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 {% endif %}
 
 {% if tipo in ('calif_atencion', 'segur_paciente') and record.responsable_nombre %}
 <div style="margin-top: 20px;">
     <div class="cat-title">👤 Datos de la persona responsable (paciente menor de edad)</div>
+    <div class="table-wrap">
     <table class="formal-table" style="margin-bottom: 0;">
       <tbody>
         <tr>
@@ -276,6 +288,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
 </div>
 {% endif %}
 
@@ -322,6 +335,7 @@
         {% set total_items = ns.valid_items|length %}
         {% set rows_count = ((total_items + 1) / 2)|int %}
         
+        <div class="table-wrap">
         <table class="result-table col-split-table">
         <thead><tr>
             <th style="width: 32%;">ÍTEM</th>
@@ -405,8 +419,10 @@
         {% endfor %}
         </tbody>
         </table>
+        </div>
     {% else %}
         {# original single-column layout #}
+        <div class="table-wrap">
         <table class="result-table">
         <thead><tr>
             <th style="width: 50%;">ÍTEM</th>
@@ -453,6 +469,7 @@
         {% endfor %}
         </tbody>
         </table>
+        </div>
     {% endif %}
     {% endif %}
     {% endfor %}
@@ -537,7 +554,7 @@ function descargarPDF() {
         margin: [8, 8, 8, 8],
         filename: "{{ tipo|upper }}_{{ record.id }}_{{ cfg.get('nombre_institucion','APH')|replace(' ','_') }}.pdf",
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false, windowWidth: 1024 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
