@@ -392,6 +392,30 @@
         filter: grayscale(80%) !important;
         pointer-events: auto !important;
     }
+    
+    /* ── Marca de Agua para Firmas ── */
+    .signature-container {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+    }
+    .signature-container img {
+        display: block;
+    }
+    .signature-container::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        {% if institucion is defined and institucion.marca_agua %}
+        background-image: url('{{ institucion.marca_agua }}');
+        {% endif %}
+        background-size: contain;
+        background-position: center;
+        background-repeat: repeat;
+        opacity: 0.15;
+        pointer-events: none;
+        z-index: 10;
+    }
 </style>
 </head>
 <body>

@@ -248,7 +248,9 @@ body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background: #f1f5f9;
                 <div class="sig-box-title">Registrado Por</div>
                 <div class="sig-box-body">
                     {% if evento.firma_registrador %}
-                    <img src="{{ evento.firma_registrador }}" alt="Firma" crossorigin="anonymous">
+                    <div class="signature-container">
+                        <img src="{{ evento.firma_registrador }}" alt="Firma" crossorigin="anonymous">
+                    </div>
                     {% else %}
                     <span class="sig-empty">Sin firma</span>
                     {% endif %}
