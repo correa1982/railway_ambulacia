@@ -20,6 +20,11 @@
 .val-na { background: #f1f5f9; color: #64748b; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block; }
 .val-empty { color: #cbd5e1; font-size: 12px; }
 
+/* ── Split columns checklist (TAM, TAB, PASM, PASB) ── */
+.col-split-table td { padding: 5px 8px; font-size: 11px; line-height: 1.2; }
+.col-split-table th { padding: 6px 8px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+.col-split-table .val-si, .col-split-table .val-no, .col-split-table .val-na { padding: 2px 6px; font-size: 9px; font-weight: 700; border-radius: 8px; }
+
 .cat-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #1e40af; margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
 .cat-title::after { content: ''; flex: 1; height: 1px; background: #dbeafe; }
 
@@ -305,52 +310,152 @@
     {% for cat, items_list in checklist_items.items() %}
     {% if tipo != 'equipos' or cat == record.grupo_equipos %}
     <div class="cat-title">{{ cat_icons.get(cat, '📦') }} {{ cat }}</div>
-    <table class="result-table">
-    <thead><tr>
-        <th style="width: 50%;">ÍTEM</th>
-        <th style="width: 20%; text-align: center;">
-            {% if tipo == 'calif_atencion' %}
-                CALIFICACIÓN (1-5)
-            {% else %}
-                RESULTADO
+    
+    {% if tipo in ('tam', 'tab', 'pasb', 'pasm', 'avanzada') %}
+        {# 2-column layout #}
+        {% set ns = namespace(valid_items=[]) %}
+        {% for item in items_list %}
+            {% set field = item.identificador %}
+            {% if field in datos %}
+                {% set ns.valid_items = ns.valid_items + [item] %}
             {% endif %}
-        </th>
-        <th style="width: 30%;">OBSERVACIÓN</th>
-    </tr></thead>
-    <tbody>
-    {% for item in items_list %}
-        {% set field = item.identificador %}
-        {% if field in datos %}
-        {% set info = datos[field] %}
-        <tr>
-            <td>
-                <strong>{{ info.nombre }}</strong>{% if info.get('cantidad') is not none %} <span style="font-size: 11px; color: #64748b; font-weight: normal;">(Cant: {{ info.cantidad }})</span>{% endif %}
-            </td>
-            <td style="text-align: center;">
-                {% if info.valor == 'SI' %}
-                    <span class="val-si">✓ SI</span>
-                {% elif info.valor == 'NO' %}
-                    <span class="val-no">✗ NO</span>
-                {% elif info.valor == 'NA' %}
-                    <span class="val-na">N/A</span>
-                {% elif info.valor %}
-                    <span style="background: #e0e7ff; color: #3730a3; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 800; display: inline-block;">{{ info.valor }}</span>
+        {% endfor %}
+        
+        {% set total_items = ns.valid_items|length %}
+        {% set rows_count = ((total_items + 1) / 2)|int %}
+        
+        <table class="result-table col-split-table">
+        <thead><tr>
+            <th style="width: 32%;">ÍTEM</th>
+            <th style="width: 8%; text-align: center;">RESULTADO</th>
+            <th style="width: 10%;">OBSERVACIÓN</th>
+            <th style="border-left: 2px solid #cbd5e1; padding-left: 10px; width: 32%;">ÍTEM</th>
+            <th style="width: 8%; text-align: center;">RESULTADO</th>
+            <th style="width: 10%;">OBSERVACIÓN</th>
+        </tr></thead>
+        <tbody>
+        {% for i in range(rows_count) %}
+            {# Left item #}
+            {% set left_item = ns.valid_items[i] %}
+            {% set left_field = left_item.identificador %}
+            {% set left_info = datos[left_field] %}
+            
+            {# Right item #}
+            {% set right_idx = i + rows_count %}
+            {% set right_item = ns.valid_items[right_idx] if right_idx < total_items else None %}
+            
+            <tr>
+                {# Render left item #}
+                <td>
+                    <strong>{{ left_info.nombre }}</strong>{% if left_info.get('cantidad') is not none %} <span style="font-size: 11px; color: #64748b; font-weight: normal;">(Cant: {{ left_info.cantidad }})</span>{% endif %}
+                </td>
+                <td style="text-align: center;">
+                    {% if left_info.valor == 'SI' %}
+                        <span class="val-si">✓ SI</span>
+                    {% elif left_info.valor == 'NO' %}
+                        <span class="val-no">✗ NO</span>
+                    {% elif left_info.valor == 'NA' %}
+                        <span class="val-na">N/A</span>
+                    {% elif left_info.valor %}
+                        <span style="background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block;">{{ left_info.valor }}</span>
+                    {% else %}
+                        <span class="val-empty">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if left_info.observacion %}
+                        <span style="font-size: 11px; color: #475569;">{{ left_info.observacion }}</span>
+                    {% else %}
+                        <span style="color: #cbd5e1;">—</span>
+                    {% endif %}
+                </td>
+                
+                {# Render right item #}
+                {% if right_item %}
+                    {% set right_field = right_item.identificador %}
+                    {% set right_info = datos[right_field] %}
+                    <td style="border-left: 2px solid #cbd5e1; padding-left: 10px;">
+                        <strong>{{ right_info.nombre }}</strong>{% if right_info.get('cantidad') is not none %} <span style="font-size: 11px; color: #64748b; font-weight: normal;">(Cant: {{ right_info.cantidad }})</span>{% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if right_info.valor == 'SI' %}
+                            <span class="val-si">✓ SI</span>
+                        {% elif right_info.valor == 'NO' %}
+                            <span class="val-no">✗ NO</span>
+                        {% elif right_info.valor == 'NA' %}
+                            <span class="val-na">N/A</span>
+                        {% elif right_info.valor %}
+                            <span style="background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block;">{{ right_info.valor }}</span>
+                        {% else %}
+                            <span class="val-empty">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if right_info.observacion %}
+                            <span style="font-size: 11px; color: #475569;">{{ right_info.observacion }}</span>
+                        {% else %}
+                            <span style="color: #cbd5e1;">—</span>
+                        {% endif %}
+                    </td>
                 {% else %}
-                    <span class="val-empty">—</span>
+                    {# Empty cells #}
+                    <td style="border-left: 2px solid #cbd5e1; padding-left: 10px;"></td>
+                    <td></td>
+                    <td></td>
                 {% endif %}
-            </td>
-            <td>
-                {% if info.observacion %}
-                    <span style="font-size: 12px; color: #475569;">{{ info.observacion }}</span>
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+    {% else %}
+        {# original single-column layout #}
+        <table class="result-table">
+        <thead><tr>
+            <th style="width: 50%;">ÍTEM</th>
+            <th style="width: 20%; text-align: center;">
+                {% if tipo == 'calif_atencion' %}
+                    CALIFICACIÓN (1-5)
                 {% else %}
-                    <span style="color: #cbd5e1;">—</span>
+                    RESULTADO
                 {% endif %}
-            </td>
-        </tr>
-        {% endif %}
-    {% endfor %}
-    </tbody>
-    </table>
+            </th>
+            <th style="width: 30%;">OBSERVACIÓN</th>
+        </tr></thead>
+        <tbody>
+        {% for item in items_list %}
+            {% set field = item.identificador %}
+            {% if field in datos %}
+            {% set info = datos[field] %}
+            <tr>
+                <td>
+                    <strong>{{ info.nombre }}</strong>{% if info.get('cantidad') is not none %} <span style="font-size: 11px; color: #64748b; font-weight: normal;">(Cant: {{ info.cantidad }})</span>{% endif %}
+                </td>
+                <td style="text-align: center;">
+                    {% if info.valor == 'SI' %}
+                        <span class="val-si">✓ SI</span>
+                    {% elif info.valor == 'NO' %}
+                        <span class="val-no">✗ NO</span>
+                    {% elif info.valor == 'NA' %}
+                        <span class="val-na">N/A</span>
+                    {% elif info.valor %}
+                        <span style="background: #e0e7ff; color: #3730a3; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 800; display: inline-block;">{{ info.valor }}</span>
+                    {% else %}
+                        <span class="val-empty">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if info.observacion %}
+                        <span style="font-size: 12px; color: #475569;">{{ info.observacion }}</span>
+                    {% else %}
+                        <span style="color: #cbd5e1;">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+        </table>
+    {% endif %}
     {% endif %}
     {% endfor %}
 
