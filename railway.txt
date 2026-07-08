@@ -4,3 +4,11 @@ DATABASE_URL  mysql://root:HZcLGOHeqHkMbCPwJSRRQoWNrHHveKsC@shinkansen.proxy.rlw
 conexión a railway
 
 cd ambulacia && gunicorn app:app
+
+
+se debe descragra mysqldump
+
+ejecutar en cmd para backup 
+mysqldump -h shinkansen.proxy.rlwy.net -P 45186 -u root -p railway > railway_backup.sql
+
+tf8mb4_0900_ai_ci cambiar por tf8mb4_0900_ai_ci 
