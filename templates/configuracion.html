@@ -56,6 +56,21 @@
                 </div>
             </div>
         </div>
+        <div style="margin-top: 15px;">
+            <label>Marca de Agua para Firmas</label>
+            <p style="margin: 4px 0 8px; color: #64748b; font-size: 13px;">Esta imagen se superpondrá a las firmas de los usuarios en los documentos para mayor seguridad.</p>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
+                <label for="marca-agua-file" class="btn" style="margin-top: 0; padding: 10px 20px; background: #ffffff; color: #8b5cf6; border: 2px dashed #ddd6fe; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(139, 92, 246, 0.05);" onmouseover="this.style.background='#f5f3ff'; this.style.borderColor='#a78bfa'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(139, 92, 246, 0.15)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#ddd6fe'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(139, 92, 246, 0.05)';"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir Marca de Agua</label>
+                <input type="file" id="marca-agua-file" name="marca_agua_file" accept="image/*" style="display: none;">
+                <div id="marca-agua-preview-container">
+                    {% if institucion.marca_agua %}
+                    <img id="marca-agua-preview" src="{{ institucion.marca_agua }}" alt="Marca de Agua" style="max-height: 45px; border: 1px solid #cbd5e0; border-radius: 4px; padding: 2px; background: white;">
+                    {% else %}
+                    <span id="marca-agua-preview-text" style="color: #a0aec0; font-size: 13px; font-style: italic;">Sin marca de agua cargada</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
         <div style="display: flex; gap: 10px; margin-top: 15px;">
             <a href="{{ url_for('dashboard') }}" style="margin:0; box-sizing: border-box; height: 44px; font-family: inherit; background:#6b7280; color:white; text-decoration:none; border:none; padding:0 24px; border-radius:10px; font-weight:600; font-size:14px; display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(107,114,128,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(107,114,128,0.3)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(107,114,128,0.2)'">
                 <i class="ph ph-arrow-left" style="font-size:18px;"></i> Volver
@@ -79,6 +94,22 @@ if (logoFileInput) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 logoPreviewContainer.innerHTML = `<img id="logo-preview" src="${event.target.result}" alt="Logo" style="max-height: 45px; border: 1px solid #cbd5e0; border-radius: 4px; padding: 2px; background: white;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+const marcaAguaFileInput = document.getElementById('marca-agua-file');
+const marcaAguaPreviewContainer = document.getElementById('marca-agua-preview-container');
+
+if (marcaAguaFileInput) {
+    marcaAguaFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                marcaAguaPreviewContainer.innerHTML = `<img id="marca-agua-preview" src="${event.target.result}" alt="Marca de Agua" style="max-height: 45px; border: 1px solid #cbd5e0; border-radius: 4px; padding: 2px; background: white;">`;
             };
             reader.readAsDataURL(file);
         }

@@ -490,7 +490,9 @@
 <div style="display:flex; justify-content:space-around; align-items:flex-end; flex-wrap:wrap; margin-top:20px; border-top:2px solid #e2e8f0; padding-top:20px;">
     {% if record.firma_registrador %}
     <div class="firma-box" style="border-top:none; margin-top:0;">
+    <div class="signature-container">
         <img src="{{ record.firma_registrador }}" alt="Firma Registrador">
+    </div>
         <div class="firma-name">{{ record.registrado_por }}</div>
         <div class="firma-meta">
             {{ record.perfil_registrador or '' }}
@@ -502,7 +504,9 @@
 
     {% if tipo == 'calif_atencion' and record.firma_paciente %}
     <div class="firma-box" style="border-top:none; margin-top:0;">
+    <div class="signature-container">
         <img src="{{ record.firma_paciente }}" alt="Firma Paciente">
+    </div>
         <div class="firma-name">
             {% if record.responsable_nombre %}
                 {{ record.responsable_nombre }} {{ record.responsable_apellido }}

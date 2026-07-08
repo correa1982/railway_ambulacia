@@ -395,6 +395,7 @@ def register_routes(app):
                 habilitaciones = [{"codigo": legacy_habilitacion, "descripcion": ""}]
 
         logo_file = request.files.get("logo_file")
+        marca_agua_file = request.files.get("marca_agua_file")
 
         conn = get_db()
         try:
@@ -434,6 +435,24 @@ def register_routes(app):
                 logo_url = f"/static/uploads/{filename}?v={int(ahora().timestamp())}"
                 
                 conn.execute("REPLACE INTO configuracion (clave, valor) VALUES ('logo', ?)", (logo_url,))
+                
+            if marca_agua_file and marca_agua_file.filename:
+                import os
+                # Create static/uploads directory if it doesn't exist
+                upload_dir = os.path.join(app.root_path, 'static', 'uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                
+                # Get extension and save file
+                ext = marca_agua_file.filename.rsplit('.', 1)[1].lower() if '.' in marca_agua_file.filename else 'png'
+                filename = f"marca_agua_institucion.{ext}"
+                filepath = os.path.join(upload_dir, filename)
+                
+                marca_agua_file.save(filepath)
+                
+                # Generate a URL with a timestamp to avoid browser caching issues when replacing the watermark
+                marca_agua_url = f"/static/uploads/{filename}?v={int(ahora().timestamp())}"
+                
+                conn.execute("REPLACE INTO configuracion (clave, valor) VALUES ('marca_agua', ?)", (marca_agua_url,))
                 
             conn.commit()
             app.clear_config_cache()

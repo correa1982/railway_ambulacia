@@ -736,7 +736,9 @@
         </div>
         <div class="hc-footer-sig">
             {% if p.firma_registrador %}
-            <img src="{{ p.firma_registrador }}" alt="Firma Profesional">
+            <div class="signature-container">
+                <img src="{{ p.firma_registrador }}" alt="Firma Profesional">
+            </div>
             {% else %}
             <div class="hc-footer-sig-empty">
                 <span>Sin firma registrada</span>

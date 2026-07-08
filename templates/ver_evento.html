@@ -242,7 +242,9 @@ body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background: #f1f5f9;
                 <div class="sig-box-title">Coordinador Evento</div>
                 <div class="sig-box-body">
                     {% if evento.firma_coordinador_evento %}
-                    <img src="{{ evento.firma_coordinador_evento }}" alt="Firma Coordinador">
+                    <div class="signature-container">
+                        <img src="{{ evento.firma_coordinador_evento }}" alt="Firma Coordinador">
+                    </div>
                     {% else %}
                     <span class="sig-empty">Sin firma</span>
                     {% endif %}
@@ -252,7 +254,9 @@ body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background: #f1f5f9;
                 <div class="sig-box-title">Coordinador Organismo de Socorro</div>
                 <div class="sig-box-body">
                     {% if evento.firma_registrador %}
-                    <img src="{{ evento.firma_registrador }}" alt="Firma" crossorigin="anonymous">
+                    <div class="signature-container">
+                        <img src="{{ evento.firma_registrador }}" alt="Firma" crossorigin="anonymous">
+                    </div>
                     {% else %}
                     <span class="sig-empty">Sin firma</span>
                     {% endif %}
