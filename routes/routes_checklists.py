@@ -155,7 +155,7 @@ def register_routes(app):
                     f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders})",
                     tuple(values)
                 )
-                record_id = conn.lastrowid
+                record_id = cursor.lastrowid
 
             conn.commit()
             conn.close()

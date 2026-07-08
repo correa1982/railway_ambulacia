@@ -166,7 +166,7 @@ def register_routes(app):
                     perfil, firma, now_str,
                     datos_json_str, evidencia_json, finalizado
                 ))
-                record_id = conn.lastrowid
+                record_id = cursor.lastrowid
                 
             conn.commit()
             conn.close()

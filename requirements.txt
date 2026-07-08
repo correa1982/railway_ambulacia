@@ -2,7 +2,7 @@ Flask==3.0.3
 python-dotenv==1.0.1
 Werkzeug==3.0.3
 itsdangerous==2.2.0
-psycopg2-binary==2.9.9
+PyMySQL==1.1.1
 cryptography==43.0.1
 gunicorn==22.0.0
 Flask-Compress==1.17
