@@ -654,11 +654,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
     }
     
-    // Enviar una vez al cargar si el navegador lo permite
-    setTimeout(sendLocation, 5000);
-    
-    // Enviar cada 2 minutos (120000 ms)
-    setInterval(sendLocation, 120000);
+    function startTracker() {
+        setTimeout(sendLocation, 5000);
+        setInterval(sendLocation, 120000);
+    }
+
+    // Solo solicitar permiso (lanzar el prompt) una vez por sesión, 
+    // y seguir rastreando "por debajo" si ya fue otorgado.
+    if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({name: 'geolocation'}).then(function(result) {
+            if (result.state === 'granted') {
+                startTracker(); // Ya tiene permiso, rastreamos sin molestar
+            } else if (result.state === 'prompt') {
+                if (!sessionStorage.getItem('gps_prompted')) {
+                    sessionStorage.setItem('gps_prompted', '1');
+                    startTracker(); // Pedimos permiso una vez en la sesión
+                }
+            }
+        });
+    } else {
+        // Fallback navegadores antiguos
+        if (!sessionStorage.getItem('gps_prompted')) {
+            sessionStorage.setItem('gps_prompted', '1');
+            startTracker();
+        }
+    }
 })();
 
 function mostrarMiUbicacionMapa() {
