@@ -108,7 +108,7 @@ def register_routes(app):
                     "valor": val,
                     "observacion": obs
                 }
-            if tipo == "avanzada":
+            if tipo in ("avanzada", "tam", "tab"):
                 nombres = request.form.getlist("integrante_nombre[]")
                 identificaciones = request.form.getlist("integrante_doc[]")
                 perfiles = request.form.getlist("integrante_perfil[]")

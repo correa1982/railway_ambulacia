@@ -185,9 +185,7 @@
     {% if tipo in ('tam', 'tab') %}
     <tr>
       <td class="lbl">Placa del Vehículo</td>
-      <td class="val">{{ record.placa or '—' }}</td>
-      <td class="lbl">Turno</td>
-      <td class="val">{{ record.turno or '—' }}</td>
+      <td class="val" colspan="3">{{ record.placa or '—' }}</td>
     </tr>
     {% elif tipo == 'avanzada' %}
     <tr>
@@ -237,15 +235,15 @@
   </tbody>
 </table>
 
-{% if tipo == 'avanzada' and datos.get('_integrantes') %}
+{% if tipo in ('avanzada', 'tam', 'tab') and datos.get('_integrantes') %}
 <div style="margin-top: 20px;">
     <div class="cat-title">👥 Integrantes de la Tripulación / Personal</div>
     <table class="result-table">
         <thead>
             <tr>
                 <th style="width: 40%;">INTEGRANTE</th>
-                <th style="width: 30%;">IDENTIFICACIÓN</th>
-                <th style="width: 30%;">PERFIL</th>
+                <th style="width: 30%;">DOCUMENTO DE IDENTIDAD</th>
+                <th style="width: 30%;">CARGO</th>
             </tr>
         </thead>
         <tbody>

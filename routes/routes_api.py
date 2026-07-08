@@ -178,3 +178,48 @@ def register_routes(app, CIE10_DATA):
         
         return render_template("estadisticas.html", stats=stats, usuario=session.get("usuario"))
 
+    @app.route("/api/usuarios_por_cargo")
+    @login_required
+    def api_usuarios_por_cargo():
+        """
+        Returns active users whose perfil JSON array contains the requested cargo.
+        Query param: ?cargo=Conductor
+        Response: [{"nombre": "...", "identificacion": "..."}, ...]
+        """
+        import unicodedata
+
+        def strip_accents(s):
+            return ''.join(
+                c for c in unicodedata.normalize('NFD', s)
+                if unicodedata.category(c) != 'Mn'
+            ).lower()
+
+        cargo = request.args.get("cargo", "").strip()
+        if not cargo:
+            return jsonify([])
+
+        cargo_norm = strip_accents(cargo)
+
+        conn = get_db()
+        rows = conn.execute(
+            "SELECT nombre, identificacion, perfil FROM usuarios WHERE activo = 1 ORDER BY nombre"
+        ).fetchall()
+        conn.close()
+        result = []
+        for r in rows:
+            try:
+                perfil_raw = r["perfil"]
+                perfiles = json.loads(perfil_raw) if perfil_raw else []
+                if not isinstance(perfiles, list):
+                    perfiles = [str(perfiles)]
+            except (Exception,):
+                perfiles = []
+            for p in perfiles:
+                if cargo_norm in strip_accents(str(p)):
+                    result.append({
+                        "nombre": r["nombre"],
+                        "identificacion": r["identificacion"]
+                    })
+                    break
+        return jsonify(result)
+

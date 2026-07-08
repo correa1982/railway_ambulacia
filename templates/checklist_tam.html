@@ -127,7 +127,7 @@
 <!-- Datos generales -->
 <fieldset>
 <legend>📋 Datos Generales</legend>
-<div class="row row-4">
+<div class="row row-3">
     <div>
         <label>Fecha <span style="color:#ef4444">*</span></label>
         <input onclick="this.showPicker()" type="date" name="fecha" max="{{ hoy }}" required value="{{ record.fecha if record else hoy }}">
@@ -145,17 +145,65 @@
             {% endfor %}
         </select>
     </div>
-    <div>
-        <label>Turno</label>
-        <select name="turno">
-            <option value="">— Turno —</option>
-            <option {% if record and record.turno == 'Mañana (06:00 - 14:00)' %}selected{% endif %}>Mañana (06:00 - 14:00)</option>
-            <option {% if record and record.turno == 'Tarde (14:00 - 22:00)' %}selected{% endif %}>Tarde (14:00 - 22:00)</option>
-            <option {% if record and record.turno == 'Noche (22:00 - 06:00)' %}selected{% endif %}>Noche (22:00 - 06:00)</option>
-            <option {% if record and record.turno == '12 horas día' %}selected{% endif %}>12 horas día</option>
-            <option {% if record and record.turno == '12 horas noche' %}selected{% endif %}>12 horas noche</option>
-        </select>
-    </div>
+</div>
+</fieldset>
+
+<!-- Integrantes de la tripulación -->
+<fieldset>
+<legend>👥 Integrantes de la Tripulación</legend>
+<table class="check-table" id="tabla-integrantes-tam" style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+    <thead><tr>
+        <th style="width: 40%;">Nombre Completo</th>
+        <th style="width: 25%;">Documento de Identidad</th>
+        <th style="width: 25%;">Cargo</th>
+        <th style="width: 10%; text-align: center;">Quitar</th>
+    </tr></thead>
+    <tbody id="tbody-integrantes-tam">
+        {% if datos and datos.get('_integrantes') %}
+            {% for member in datos['_integrantes'] %}
+            <tr class="integrante-row">
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control integrante-nombre" required placeholder="Nombre completo" value="{{ member.nombre }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control integrante-doc" placeholder="Cédula / ID" value="{{ member.identificacion }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
+                    <select name="integrante_perfil[]" class="form-control integrante-cargo" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;" onchange="onCargoCambioTam(this)">
+                        <option value="">— Cargo —</option>
+                        {% for cargo in ['Conductor','Medico','Enfermero','APH','Auxiliar en Enfermeria','Socorrista','Estudiante'] %}
+                        <option value="{{ cargo }}" {% if member.perfil == cargo %}selected{% endif %}>{{ cargo }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td style="text-align: center; border: 1px solid #f1f5f9;">
+                    <button type="button" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px;" onclick="removeIntegranteTam(this)">✕</button>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr class="integrante-row">
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control integrante-nombre" required placeholder="Nombre completo" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control integrante-doc" placeholder="Cédula / ID" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
+                    <select name="integrante_perfil[]" class="form-control integrante-cargo" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;" onchange="onCargoCambioTam(this)">
+                        <option value="">— Cargo —</option>
+                        <option>Conductor</option>
+                        <option>Medico</option>
+                        <option>Enfermero</option>
+                        <option>APH</option>
+                        <option>Auxiliar en Enfermeria</option>
+                        <option>Socorrista</option>
+                        <option>Estudiante</option>
+                    </select>
+                </td>
+                <td style="text-align: center; border: 1px solid #f1f5f9;">
+                    <button type="button" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px;" onclick="removeIntegranteTam(this)">✕</button>
+                </td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+<div style="margin-top: 10px;">
+    <button type="button" id="btn-add-integrante-tam" style="font-size: 12px; padding: 6px 14px; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; border: none; background: linear-gradient(135deg,#10b981,#059669); color: white; font-weight: 700; height: 32px; min-height: 32px;">
+        + Agregar Integrante
+    </button>
 </div>
 </fieldset>
 
@@ -344,5 +392,98 @@ document.querySelectorAll('input[type="radio"]').forEach(function(radio) {
 checkNo();
 recalcBadges();
 restaurarEstadoAcordeon();
+
+// ── Integrantes TAM ──────────────────────────────────
+const CARGOS_TAM = ['Conductor','Medico','Enfermero','APH','Auxiliar en Enfermeria','Socorrista','Estudiante'];
+const INPUT_STYLE  = 'width:100%;border:1px solid #cbd5e1;border-radius:5px;padding:6px;font-size:13px;box-sizing:border-box;';
+const SELECT_STYLE = INPUT_STYLE + 'background:white;';
+
+function buildCargoOptions(selected) {
+    return '<option value="">— Cargo —</option>' +
+        CARGOS_TAM.map(c => `<option value="${c}" ${c === selected ? 'selected' : ''}>${c}</option>`).join('');
+}
+
+function buildNombreInput(nombre) {
+    return `<input type="text" name="integrante_nombre[]" class="form-control integrante-nombre" required placeholder="Nombre completo" value="${nombre||''}" style="${INPUT_STYLE}">`;
+}
+
+function buildDocInput(doc) {
+    return `<input type="text" name="integrante_doc[]" class="form-control integrante-doc" placeholder="Cédula / ID" value="${doc||''}" style="${INPUT_STYLE}">`;
+}
+
+async function onCargoCambioTam(selectEl) {
+    const cargo = selectEl.value;
+    const row   = selectEl.closest('tr');
+    const tdNom = row.querySelector('td:nth-child(1)');
+    const tdDoc = row.querySelector('td:nth-child(2)');
+
+    if (!cargo || cargo === 'Estudiante') {
+        // Free text for Estudiante or empty
+        tdNom.innerHTML = buildNombreInput('');
+        tdDoc.innerHTML = buildDocInput('');
+        return;
+    }
+
+    // Fetch users with this cargo from the server
+    try {
+        const res   = await fetch(`/api/usuarios_por_cargo?cargo=${encodeURIComponent(cargo)}`);
+        const users = await res.json();
+
+        if (users.length === 0) {
+            tdNom.innerHTML = buildNombreInput('');
+            tdDoc.innerHTML = buildDocInput('');
+            return;
+        }
+
+        // Build a select with user names
+        const opts = '<option value="">— Seleccionar —</option>' +
+            users.map(u => `<option value="${u.nombre}" data-doc="${u.identificacion}">${u.nombre}</option>`).join('');
+        tdNom.innerHTML = `<select name="integrante_nombre[]" class="form-control integrante-nombre" required style="${SELECT_STYLE}">${opts}</select>`;
+        tdDoc.innerHTML = buildDocInput('');
+
+        // Auto-fill Documento when user is selected
+        tdNom.querySelector('select').addEventListener('change', function() {
+            const opt = this.options[this.selectedIndex];
+            tdDoc.querySelector('input').value = opt.dataset.doc || '';
+        });
+    } catch(e) {
+        tdNom.innerHTML = buildNombreInput('');
+        tdDoc.innerHTML = buildDocInput('');
+    }
+}
+
+function makeRowTam(nombre, doc, cargo) {
+    return `
+        <td style="padding:6px 14px;border:1px solid #f1f5f9;">${buildNombreInput(nombre)}</td>
+        <td style="padding:6px 14px;border:1px solid #f1f5f9;">${buildDocInput(doc)}</td>
+        <td style="padding:6px 14px;border:1px solid #f1f5f9;">
+            <select name="integrante_perfil[]" class="form-control integrante-cargo" required style="${SELECT_STYLE}" onchange="onCargoCambioTam(this)">${buildCargoOptions(cargo)}</select>
+        </td>
+        <td style="text-align:center;border:1px solid #f1f5f9;">
+            <button type="button" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:18px;" onclick="removeIntegranteTam(this)">✕</button>
+        </td>`;
+}
+
+document.getElementById('btn-add-integrante-tam').addEventListener('click', function() {
+    const tbody = document.getElementById('tbody-integrantes-tam');
+    const tr = document.createElement('tr');
+    tr.className = 'integrante-row';
+    tr.innerHTML = makeRowTam('', '', '');
+    tbody.appendChild(tr);
+});
+
+function removeIntegranteTam(btn) {
+    const rows = document.querySelectorAll('#tbody-integrantes-tam .integrante-row');
+    if (rows.length > 1) {
+        btn.closest('tr').remove();
+    } else {
+        alert('Debe tener al menos un integrante.');
+    }
+}
+
+// Wire existing rows' cargo selects (for pre-filled draft records)
+document.querySelectorAll('#tbody-integrantes-tam .integrante-cargo').forEach(function(sel) {
+    sel.addEventListener('change', function() { onCargoCambioTam(this); });
+});
 </script>
 {% endblock %}
