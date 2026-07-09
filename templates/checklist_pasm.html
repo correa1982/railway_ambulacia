@@ -54,6 +54,18 @@
     background-color: white;
     color: #333;
 }
+@media (max-width: 650px) {
+    .check-table thead { display: none; }
+    .check-table, .check-table tbody, .check-table tr, .check-table td { display: block; width: 100%; box-sizing: border-box; }
+    .check-table tr { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; padding: 16px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+    .check-table td { border: none !important; padding: 0 !important; }
+    .check-row { display: flex; flex-direction: column; align-items: stretch !important; gap: 12px; padding: 0; }
+    .item-name { text-align: center; font-weight: 700; color: #475569; font-size: 14px; margin-bottom: 8px; }
+    .radio-trio { display: flex; flex-direction: row; justify-content: space-between; width: 100%; gap: 6px; }
+    .radio-trio > div { flex: 1; text-align: center; }
+    .radio-trio label { display: block; width: 100%; padding: 12px 0; font-size: 14px; border-radius: 6px; text-align: center; box-sizing: border-box; }
+    .obs-item-row { margin-top: 12px; }
+}
 </style>
 
 <div class="cl-header">
@@ -142,15 +154,15 @@
                 <div class="radio-trio">
                     <div class="ri-si">
                         <input type="radio" name="{{ field }}" id="pasm_{{ field }}_si" value="SI" {% if val_exist == 'SI' %}checked{% endif %}>
-                        <label for="pasm_{{ field }}_si">Cumple</label>
+                        <label for="pasm_{{ field }}_si">SI</label>
                     </div>
                     <div class="ri-no">
                         <input type="radio" name="{{ field }}" id="pasm_{{ field }}_no" value="NO" {% if val_exist == 'NO' %}checked{% endif %}>
-                        <label for="pasm_{{ field }}_no">No Cumple</label>
+                        <label for="pasm_{{ field }}_no">NO</label>
                     </div>
                     <div class="ri-na">
                         <input type="radio" name="{{ field }}" id="pasm_{{ field }}_na" value="NA" {% if val_exist == 'NA' %}checked{% endif %}>
-                        <label for="pasm_{{ field }}_na">No Aplica</label>
+                        <label for="pasm_{{ field }}_na">N/A</label>
                     </div>
                 </div>
             </div>
