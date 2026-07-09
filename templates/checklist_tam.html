@@ -477,7 +477,16 @@ function removeIntegranteTam(btn) {
     if (rows.length > 1) {
         btn.closest('tr').remove();
     } else {
-        alert('Debe tener al menos un integrante.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atención',
+            text: 'Debe tener al menos un integrante.',
+            customClass: {
+                popup: 'swal2-custom-popup',
+                title: 'swal2-custom-title',
+                confirmButton: 'swal2-custom-confirm'
+            }
+        });
     }
 }
 
