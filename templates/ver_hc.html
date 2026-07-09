@@ -790,27 +790,27 @@ document.getElementById('download-pdf').addEventListener('click', function() {
             useCORS: true,
             logging: false,
             allowTaint: true,
-            backgroundColor: '#ffffff',
-            windowWidth: 800
+            backgroundColor: '#ffffff'
         },
         jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
     };
     
-    const originalWidth = element.style.width;
-    const originalMaxWidth = element.style.maxWidth;
-    element.style.width = '800px';
-    element.style.maxWidth = '800px';
-    const wrappers = element.querySelectorAll('.table-responsive, .table-wrap');
-    const origOverflows = [];
-    wrappers.forEach(w => {
-        origOverflows.push(w.style.overflowX);
-        w.style.overflowX = 'visible';
-    });
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = window.scrollY + 'px';
+    tempContainer.style.width = '800px';
+    tempContainer.style.background = 'white';
+    
+    const clone = element.cloneNode(true);
+    const wrappers = clone.querySelectorAll('.table-responsive, .table-wrap');
+    wrappers.forEach(w => w.style.overflowX = 'visible');
+    
+    tempContainer.appendChild(clone);
+    document.body.appendChild(tempContainer);
 
-    html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
-        element.style.width = originalWidth;
-        element.style.maxWidth = originalMaxWidth;
-        wrappers.forEach((w, i) => { w.style.overflowX = origOverflows[i]; });
+    html2pdf().set(opt).from(clone).outputPdf('blob').then(function(blob) {
+        document.body.removeChild(tempContainer);
         
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -823,9 +823,9 @@ document.getElementById('download-pdf').addEventListener('click', function() {
     }).catch(function(err) {
         console.error('Error generando PDF:', err);
         alert('Error al generar el PDF. Por favor intente nuevamente.');
-        element.style.width = originalWidth;
-        element.style.maxWidth = originalMaxWidth;
-        wrappers.forEach((w, i) => { w.style.overflowX = origOverflows[i]; });
+        if (document.body.contains(tempContainer)) {
+            document.body.removeChild(tempContainer);
+        }
     }).finally(function() {
         btn.disabled = false;
         btn.textContent = '📥 Descargar PDF';
