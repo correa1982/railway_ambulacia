@@ -225,6 +225,9 @@
       grid-template-columns: 1fr;
     }
   }
+  fieldset {
+    min-width: 0;
+  }
 </style>
 
 <div style="margin-bottom: 20px;">
@@ -587,7 +590,6 @@ document.getElementById("archivador-form").addEventListener("submit", function(e
   if (otroInput.value) formData.append("nombre_formulario_otro", otroInput.value);
   formData.append("categoria", document.getElementById("categoria").value);
   formData.append("fecha_documento", document.getElementById("fecha_documento").value);
-  formData.append("descripcion", document.getElementById("descripcion").value);
 
   for (var i = 0; i < allFiles.length; i++) {
     formData.append("archivo", allFiles[i]);

@@ -204,14 +204,21 @@ def register_routes(app):
             return redirect(url_for("archivador_list"))
 
         if request.method == "POST":
-            nombre_formulario = request.form.get("nombre_formulario", "").strip()
+            nombre_formulario_select = request.form.get("nombre_formulario_select")
+            nombre_formulario_otro = request.form.get("nombre_formulario_otro")
+            nombre_formulario = nombre_formulario_otro if nombre_formulario_select == "Otro" else nombre_formulario_select
+            nombre_formulario = nombre_formulario.strip() if nombre_formulario else ""
+            
             categoria = request.form.get("categoria", "").strip()
             descripcion = request.form.get("descripcion", "").strip()
             fecha_documento = request.form.get("fecha_documento", "").strip()
             file = request.files.get("archivo")
 
             if not nombre_formulario:
-                flash("El nombre del formulario es obligatorio.", "error")
+                msg = "El nombre del formulario es obligatorio."
+                if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                    return jsonify({"success": False, "message": msg, "redirect": url_for("archivador_editar", id=id)}), 400
+                flash(msg, "error")
                 return redirect(url_for("archivador_editar", id=id))
 
             archivo_url = archivo["archivo_url"]
