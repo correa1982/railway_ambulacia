@@ -101,18 +101,17 @@
 .ri-na input:checked + label { background: #94a3b8; color: white; border-color: #64748b; }
 .empty-msg { text-align: center; padding: 30px; color: #94a3b8; font-size: 14px; }
 
-/* ── Responsive ──────────────────────────────────────── */
-@media (max-width: 600px) {
+@media (max-width: 650px) {
     .check-table thead { display: none; }
     .check-table, .check-table tbody, .check-table tr, .check-table td { display: block; width: 100%; box-sizing: border-box; }
-    .check-table tbody tr { border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-    .check-table tbody td { border: none; }
-    .check-row { flex-direction: column; align-items: stretch; padding: 12px 14px 8px; }
-    .item-name { margin-bottom: 10px; width: 100%; }
-    .radio-trio { width: 100%; justify-content: space-between; }
-    .radio-trio > div { flex: 1; }
-    .radio-trio label { display: block; text-align: center; padding: 10px 4px; }
-    .obs-item-row { margin-bottom: 8px; }
+    .check-table tbody tr { border: 1px solid #e2e8f0; margin-bottom: 8px; border-radius: 8px; overflow: hidden; background: #fff; padding-bottom: 0; }
+    .check-table tbody td { border: none !important; }
+    .check-row { flex-direction: column; align-items: stretch; padding: 12px; }
+    .item-name { margin-bottom: 8px; width: 100%; text-align: center; font-weight: 600; }
+    .radio-trio { width: 100%; justify-content: space-between; gap: 6px; }
+    .radio-trio > div { flex: 1; text-align: center; }
+    .radio-trio label { display: flex; align-items: center; justify-content: center; padding: 8px 2px; font-size: 12px; white-space: normal; line-height: 1.2; height: 100%; box-sizing: border-box; }
+    .obs-item-row { padding: 0 12px 12px 12px; margin-bottom: 0; }
 }
 </style>
 
