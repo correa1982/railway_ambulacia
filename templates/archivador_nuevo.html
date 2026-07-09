@@ -293,10 +293,6 @@
             <input type="date" id="fecha_documento" name="fecha_documento" value="{% if archivo and archivo.fecha_documento %}{{ archivo.fecha_documento }}{% endif %}">
           </div>
 
-          <div class="full-width">
-            <label for="descripcion">Descripción (opcional)</label>
-            <textarea id="descripcion" name="descripcion" rows="2" placeholder="Breve descripción del contenido del documento..." style="min-height: 50px;">{% if archivo and archivo.descripcion %}{{ archivo.descripcion }}{% endif %}</textarea>
-          </div>
         </div>
       </fieldset>
 
