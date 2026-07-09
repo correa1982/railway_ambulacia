@@ -187,6 +187,19 @@
         <td style="font-size:12px;"><strong>{{ item.registrado_por }}</strong>
             <span style="display:block; font-size:10px; color:#64748b;">{{ item.perfil_registrador or '' }}</span></td>
         <td style="font-size:11px; color:#64748b; white-space:nowrap;">{{ item.fecha_registro }}</td>
+        <td style="text-align:center; white-space:nowrap;">
+            {% if item.finalizado == 0 %}
+            <a href="{{ url_for('form_checklist', tipo=tipo, id=item.id) }}"
+               style="background: linear-gradient(135deg, #f59e0b, #d97706); color:white; padding:5px 10px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:700;">
+                ✏️ Completar
+            </a>
+            {% else %}
+            <a href="{{ url_for('ver_checklist', tipo=tipo, record_id=item.id) }}"
+               style="background:#1e6fbf; color:white; padding:5px 10px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:700;">
+                👁 Ver
+            </a>
+            {% endif %}
+        </td>
     {% elif tipo == 'avanzada' %}
         <td>{{ item.fecha }}</td>
         <td>{{ item.hora or '—' }}</td>
