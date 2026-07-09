@@ -292,12 +292,30 @@ function descargarPDF() {
         margin: [8, 8, 8, 8],
         filename: `Atencion_Colectiva_{{ evento.id }}_{{ cfg.get('nombre_institucion','APH')|replace(' ','_') }}.pdf`,
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false, windowWidth: 800 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
-    html2pdf().set(opt).from(document.getElementById('evento-doc')).save()
-        .then(() => { btn.textContent = '📄 Descargar PDF'; btn.disabled = false; });
+
+    const doc = document.getElementById('evento-doc');
+    const originalWidth = doc.style.width;
+    const originalMaxWidth = doc.style.maxWidth;
+    doc.style.width = '800px';
+    doc.style.maxWidth = '800px';
+    const wrappers = doc.querySelectorAll('.table-wrap');
+    const origOverflows = [];
+    wrappers.forEach(w => {
+        origOverflows.push(w.style.overflowX);
+        w.style.overflowX = 'visible';
+    });
+
+    html2pdf().set(opt).from(doc).save()
+        .then(() => { 
+            doc.style.width = originalWidth;
+            doc.style.maxWidth = originalMaxWidth;
+            wrappers.forEach((w, i) => { w.style.overflowX = origOverflows[i]; });
+            btn.textContent = '📄 Descargar PDF'; btn.disabled = false; 
+        });
 }
 </script>
 {% endif %}

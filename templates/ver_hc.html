@@ -790,12 +790,28 @@ document.getElementById('download-pdf').addEventListener('click', function() {
             useCORS: true,
             logging: false,
             allowTaint: true,
-            backgroundColor: '#ffffff'
+            backgroundColor: '#ffffff',
+            windowWidth: 800
         },
         jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
     };
+    
+    const originalWidth = element.style.width;
+    const originalMaxWidth = element.style.maxWidth;
+    element.style.width = '800px';
+    element.style.maxWidth = '800px';
+    const wrappers = element.querySelectorAll('.table-responsive, .table-wrap');
+    const origOverflows = [];
+    wrappers.forEach(w => {
+        origOverflows.push(w.style.overflowX);
+        w.style.overflowX = 'visible';
+    });
 
     html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
+        element.style.width = originalWidth;
+        element.style.maxWidth = originalMaxWidth;
+        wrappers.forEach((w, i) => { w.style.overflowX = origOverflows[i]; });
+        
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -807,6 +823,9 @@ document.getElementById('download-pdf').addEventListener('click', function() {
     }).catch(function(err) {
         console.error('Error generando PDF:', err);
         alert('Error al generar el PDF. Por favor intente nuevamente.');
+        element.style.width = originalWidth;
+        element.style.maxWidth = originalMaxWidth;
+        wrappers.forEach((w, i) => { w.style.overflowX = origOverflows[i]; });
     }).finally(function() {
         btn.disabled = false;
         btn.textContent = '📥 Descargar PDF';
