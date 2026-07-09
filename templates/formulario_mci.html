@@ -1,5 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Formulario MCI / Atención Colectiva{% endblock %}
+{% block title %}Formulario MCI / Atención Colectiva
+<script>
+// Hacer que los acordeones sean exclusivos (solo uno abierto a la vez)
+document.addEventListener('DOMContentLoaded', function() {
+    const details = document.querySelectorAll('details.accordion-step');
+    details.forEach(targetDetail => {
+        targetDetail.addEventListener('toggle', () => {
+            if (targetDetail.open) {
+                details.forEach(detail => {
+                    if (detail !== targetDetail) {
+                        detail.removeAttribute('open');
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}
 {% block content %}
 <style>
 /* CIE10 dropdown */
@@ -30,6 +49,55 @@
 .btn-dictar:hover { background: #dbeafe; }
 .btn-dictar.recording { background: #fee2e2; border-color: #fca5a5; color: #ef4444; animation: pulse-record 1.5s infinite; }
 @keyframes pulse-record { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 6px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+details.accordion-step {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+details.accordion-step > summary {
+    background: #f8fafc;
+    padding: 14px 18px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #1e3a8a;
+    cursor: pointer;
+    list-style: none;
+    border-radius: 8px;
+    transition: background 0.2s;
+    position: relative;
+    border: none;
+    margin: 0;
+    text-transform: uppercase;
+}
+details.accordion-step > summary::-webkit-details-marker {
+    display: none;
+}
+details.accordion-step > summary:hover {
+    background: #f1f5f9;
+}
+details.accordion-step > summary::after {
+    content: "▼";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #64748b;
+    transition: transform 0.2s;
+}
+details.accordion-step[open] > summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+details.accordion-step[open] > summary::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+.accordion-content {
+    padding: 16px 18px;
+}
 </style>
 
 <!-- Header -->
@@ -78,8 +146,9 @@
     <input type="hidden" id="offline_id_input" name="_offline_id_update" value="">
 
     <!-- ── Identificación del Paciente ── -->
-    <fieldset>
-        <legend><i class="ph ph-identification-card"></i> Identificación del Paciente</legend>
+    <details class="accordion-step" name="mci-accordion" open>
+        <summary><i class="ph ph-identification-card"></i> Identificación del Paciente</summary>
+        <div class="accordion-content">
         <div class="row">
             <div>
                 <label>Tipo Documento</label>
@@ -187,11 +256,13 @@
                 </select>
             </div>
         </div>
-    </fieldset>
+            </div>
+    </details>
 
     <!-- ── Datos de Contacto y Residencia ── -->
-    <fieldset>
-        <legend><i class="ph ph-address-book"></i> Datos de Contacto y Residencia</legend>
+    <details class="accordion-step" name="mci-accordion">
+        <summary><i class="ph ph-address-book"></i> Datos de Contacto y Residencia</summary>
+        <div class="accordion-content">
         <div class="row">
             <div>
                 <label>Número de Contacto</label>
@@ -228,11 +299,13 @@
                 <input type="text" name="direccion" placeholder="Ej. Calle 45 # 23-10" value="{{ paciente.direccion or '' if paciente else '' }}">
             </div>
         </div>
-    </fieldset>
+            </div>
+    </details>
 
     <!-- ── Seguridad Social ── -->
-    <fieldset>
-        <legend><i class="ph ph-shield-check"></i> Seguridad Social</legend>
+    <details class="accordion-step" name="mci-accordion">
+        <summary><i class="ph ph-shield-check"></i> Seguridad Social</summary>
+        <div class="accordion-content">
         <div class="row">
             <div>
                 <label>Tipo de Aseguramiento</label>
@@ -253,11 +326,13 @@
                 </select>
             </div>
         </div>
-    </fieldset>
+            </div>
+    </details>
 
     <!-- ── Signos Vitales ── -->
-    <fieldset>
-        <legend><i class="ph ph-heartbeat"></i> Signos Vitales</legend>
+    <details class="accordion-step" name="mci-accordion">
+        <summary><i class="ph ph-heartbeat"></i> Signos Vitales</summary>
+        <div class="accordion-content">
         <div class="vs-grid">
             <div class="vs-cell">
                 <label>Presión Arterial (mmHg)</label>
@@ -286,11 +361,13 @@
             </div>
         </div>
         <div id="vs-alerta-resumen"></div>
-    </fieldset>
+            </div>
+    </details>
 
     <!-- ── Antecedentes Médicos ── -->
-    <fieldset>
-        <legend>📋 Antecedentes Médicos</legend>
+    <details class="accordion-step" name="mci-accordion">
+        <summary>📋 Antecedentes Médicos</summary>
+        <div class="accordion-content">
         <div class="row">
             <div>
                 <label>Antecedentes Patológicos</label>
@@ -332,11 +409,13 @@
             <label>Antecedentes Familiares</label>
             <textarea name="antecedentes_familiares" placeholder="Ej. Diabetes tipo 2 en madre, Enfermedad coronaria en padre...">{{ paciente.antecedentes_familiares or '' if paciente else '' }}</textarea>
         </div>
-    </fieldset>
+            </div>
+    </details>
 
     <!-- ── Evolución de Atención Clínica ── -->
-    <fieldset>
-        <legend><i class="ph ph-activity"></i> Evolución de Atención Clínica</legend>
+    <details class="accordion-step" name="mci-accordion">
+        <summary><i class="ph ph-activity"></i> Evolución de Atención Clínica</summary>
+        <div class="accordion-content">
         <div style="margin-bottom: 12px; position: relative;">
             <label style="display: flex; justify-content: space-between; align-items: center;">Motivo de Consulta / Lesión Principal <button type="button" class="btn-dictar" tabindex="-1" title="Dictar por voz" onclick="startDictation(this, this.parentElement.nextElementSibling)"><i class="ph ph-microphone"></i></button></label>
             <textarea name="motivo_consulta" required placeholder="Ej. Trauma craneoencefálico, herida abierta..." rows="3">{{ paciente.motivo_consulta or '' if paciente else '' }}</textarea>
@@ -353,11 +432,13 @@
             <label style="display: flex; justify-content: space-between; align-items: center;">Plan de Manejo y Conducta <button type="button" class="btn-dictar" tabindex="-1" title="Dictar por voz" onclick="startDictation(this, this.parentElement.nextElementSibling)"><i class="ph ph-microphone"></i></button></label>
             <textarea name="plan" placeholder="Describa el plan de manejo y conducta a seguir..." rows="3">{{ paciente.plan or '' if paciente else '' }}</textarea>
         </div>
-    </fieldset>
+            </div>
+    </details>
 
     <!-- ── Impresión Diagnóstica ── -->
-    <fieldset>
-        <legend>🩺 Impresión Diagnóstica</legend>
+    <details class="accordion-step" name="mci-accordion">
+        <summary>🩺 Impresión Diagnóstica</summary>
+        <div class="accordion-content">
         <label>Diagnóstico CIE10</label>
         <div style="position: relative;">
             <input type="text" id="cie10-search-mci" autocomplete="off"
@@ -370,7 +451,8 @@
                  border:1.5px solid #bfdbfe; border-radius:0 0 8px 8px; max-height:200px; overflow-y:auto;
                  z-index:200; box-shadow:0 8px 20px rgba(0,0,0,0.1);"></div>
         </div>
-    </fieldset>
+            </div>
+    </details>
 
     <!-- ── Botones de Acción ── -->
     <div class="submit-row" style="display:flex; flex-wrap:wrap; gap:12px; justify-content: flex-end; margin-top:20px; align-items:center;">
@@ -1491,6 +1573,25 @@ function startDictation(btn, targetTextarea) {
     };
     recognition.start();
 }
+</script>
+
+
+<script>
+// Hacer que los acordeones sean exclusivos (solo uno abierto a la vez)
+document.addEventListener('DOMContentLoaded', function() {
+    const details = document.querySelectorAll('details.accordion-step');
+    details.forEach(targetDetail => {
+        targetDetail.addEventListener('toggle', () => {
+            if (targetDetail.open) {
+                details.forEach(detail => {
+                    if (detail !== targetDetail) {
+                        detail.removeAttribute('open');
+                    }
+                });
+            }
+        });
+    });
+});
 </script>
 
 {% endblock %}
