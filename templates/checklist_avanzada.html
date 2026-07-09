@@ -70,10 +70,14 @@
         {% if datos and datos.get('_integrantes') %}
             {% for member in datos['_integrantes'] %}
             <tr class="integrante-row">
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control" required placeholder="Nombre completo" value="{{ member.nombre }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control" placeholder="Cédula / ID" value="{{ member.identificacion }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
                 <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
-                    <select name="integrante_perfil[]" class="form-control" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;">
+                    <div class="nombre-container" data-val="{{ member.nombre }}">
+                        <input type="text" name="integrante_nombre[]" class="form-control input-nombre" required placeholder="Nombre completo" value="{{ member.nombre }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;">
+                    </div>
+                </td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control input-doc" placeholder="Cédula / ID" value="{{ member.identificacion }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
+                    <select name="integrante_perfil[]" class="form-control select-perfil" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;">
                         <option value="Enfermero" {% if member.perfil == 'Enfermero' %}selected{% endif %}>Enfermero</option>
                         <option value="APH" {% if member.perfil == 'APH' %}selected{% endif %}>APH</option>
                         <option value="Auxiliar en Enfermeria" {% if member.perfil == 'Auxiliar en Enfermeria' %}selected{% endif %}>Auxiliar en Enfermeria</option>
@@ -90,10 +94,14 @@
             {% endfor %}
         {% else %}
             <tr class="integrante-row">
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control" required placeholder="Nombre completo" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control" placeholder="Cédula / ID" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
                 <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
-                    <select name="integrante_perfil[]" class="form-control" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;">
+                    <div class="nombre-container">
+                        <input type="text" name="integrante_nombre[]" class="form-control input-nombre" required placeholder="Nombre completo" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;">
+                    </div>
+                </td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control input-doc" placeholder="Cédula / ID" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
+                    <select name="integrante_perfil[]" class="form-control select-perfil" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;">
                         <option value="Enfermero">Enfermero</option>
                         <option value="APH">APH</option>
                         <option value="Auxiliar en Enfermeria">Auxiliar en Enfermeria</option>
@@ -201,6 +209,8 @@
 
 <script>
 (function() {
+    const todosUsuarios = {{ todos_usuarios | tojson }};
+
     function checkNo() {
         document.querySelectorAll('input[type="radio"]').forEach(function(radio) {
             if (radio.checked) {
@@ -225,6 +235,91 @@
     });
     checkNo();
 
+    function updateNombreInput(row) {
+        const perfilSelect = row.querySelector('.select-perfil');
+        const container = row.querySelector('.nombre-container');
+        if (!perfilSelect || !container) return;
+        
+        const perfil = perfilSelect.value;
+        const currentVal = container.getAttribute('data-val') || '';
+
+        container.innerHTML = ''; // Clear container
+
+        if (perfil === 'Estudiante') {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'integrante_nombre[]';
+            input.className = 'form-control input-nombre';
+            input.required = true;
+            input.placeholder = 'Nombre completo';
+            input.style.cssText = 'width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;';
+            input.value = currentVal;
+            input.addEventListener('input', function() {
+                container.setAttribute('data-val', this.value);
+            });
+            container.appendChild(input);
+        } else {
+            const select = document.createElement('select');
+            select.name = 'integrante_nombre[]';
+            select.className = 'form-control input-nombre';
+            select.required = true;
+            select.style.cssText = 'width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;';
+            
+            const defOption = document.createElement('option');
+            defOption.value = '';
+            defOption.textContent = 'Seleccione un usuario';
+            select.appendChild(defOption);
+
+            // Filter users based on profile containing the word
+            // Note: DB profile is a stringified JSON array or plain text
+            todosUsuarios.forEach(u => {
+                let match = false;
+                if (u.perfil) {
+                    try {
+                        let parsed = JSON.parse(u.perfil);
+                        if (Array.isArray(parsed)) {
+                            match = parsed.some(p => p.includes(perfil));
+                        } else {
+                            match = u.perfil.includes(perfil);
+                        }
+                    } catch(e) {
+                        match = u.perfil.includes(perfil);
+                    }
+                }
+                
+                if (match) {
+                    const option = document.createElement('option');
+                    option.value = u.nombre;
+                    option.textContent = u.nombre;
+                    option.dataset.doc = u.identificacion;
+                    if (u.nombre === currentVal) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                }
+            });
+
+            select.addEventListener('change', function() {
+                container.setAttribute('data-val', this.value);
+                const selectedOpt = this.options[this.selectedIndex];
+                const docInput = row.querySelector('.input-doc');
+                if (docInput && selectedOpt && selectedOpt.dataset.doc) {
+                    docInput.value = selectedOpt.dataset.doc;
+                }
+            });
+            container.appendChild(select);
+        }
+    }
+
+    // Initialize existing rows
+    document.querySelectorAll('.integrante-row').forEach(row => {
+        const selectPerfil = row.querySelector('.select-perfil');
+        if (selectPerfil) {
+            updateNombreInput(row);
+            selectPerfil.addEventListener('change', () => updateNombreInput(row));
+        }
+    });
+
     // Tripulación dinámica
     const tbody = document.getElementById('tbody-integrantes');
     const btnAdd = document.getElementById('btn-add-integrante');
@@ -234,10 +329,12 @@
             const tr = document.createElement('tr');
             tr.className = 'integrante-row';
             tr.innerHTML = `
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control" required placeholder="Nombre completo" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control" placeholder="Cédula / ID" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
                 <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
-                    <select name="integrante_perfil[]" class="form-control" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;">
+                    <div class="nombre-container" data-val=""></div>
+                </td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control input-doc" placeholder="Cédula / ID" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
+                    <select name="integrante_perfil[]" class="form-control select-perfil" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;">
                         <option value="Enfermero">Enfermero</option>
                         <option value="APH">APH</option>
                         <option value="Auxiliar en Enfermeria">Auxiliar en Enfermeria</option>
@@ -252,6 +349,11 @@
                 </td>
             `;
             tbody.appendChild(tr);
+            
+            // Initialize new row
+            const selectPerfil = tr.querySelector('.select-perfil');
+            updateNombreInput(tr);
+            selectPerfil.addEventListener('change', () => updateNombreInput(tr));
         });
     }
 

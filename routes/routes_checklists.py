@@ -198,6 +198,13 @@ def register_routes(app):
                 "SELECT nombre FROM usuarios WHERE activo = 1 AND (fecha_validez IS NULL OR fecha_validez >= CURDATE()) AND perfil LIKE '%APH%' ORDER BY nombre"
             ).fetchall()
 
+        todos_usuarios = []
+        if tipo == "avanzada":
+            usuarios_db = conn.execute(
+                "SELECT nombre, identificacion, perfil FROM usuarios WHERE activo = 1 AND (fecha_validez IS NULL OR fecha_validez >= CURDATE()) ORDER BY nombre"
+            ).fetchall()
+            todos_usuarios = [dict(u) for u in usuarios_db]
+
         # Load draft if ?id= provided
         record_id = request.args.get("id")
         if record_id:
@@ -244,6 +251,7 @@ def register_routes(app):
             medicos=medicos,
             enfermeros=enfermeros,
             aphs=aphs,
+            todos_usuarios=todos_usuarios,
             record=record,
             datos=datos
         )
