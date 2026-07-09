@@ -153,17 +153,15 @@
 <legend>👥 Integrantes de la Tripulación</legend>
 <table class="check-table" id="tabla-integrantes-tam" style="width: 100%; border-collapse: collapse; margin-top: 8px;">
     <thead><tr>
+        <th style="width: 25%;">Cargo</th>
         <th style="width: 40%;">Nombre Completo</th>
         <th style="width: 25%;">Documento de Identidad</th>
-        <th style="width: 25%;">Cargo</th>
         <th style="width: 10%; text-align: center;">Quitar</th>
     </tr></thead>
     <tbody id="tbody-integrantes-tam">
         {% if datos and datos.get('_integrantes') %}
             {% for member in datos['_integrantes'] %}
             <tr class="integrante-row">
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control integrante-nombre" required placeholder="Nombre completo" value="{{ member.nombre }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control integrante-doc" placeholder="Cédula / ID" value="{{ member.identificacion }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
                 <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
                     <select name="integrante_perfil[]" class="form-control integrante-cargo" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;" onchange="onCargoCambioTam(this)">
                         <option value="">— Cargo —</option>
@@ -172,6 +170,8 @@
                         {% endfor %}
                     </select>
                 </td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control integrante-nombre" required placeholder="Nombre completo" value="{{ member.nombre }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control integrante-doc" placeholder="Cédula / ID" value="{{ member.identificacion }}" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
                 <td style="text-align: center; border: 1px solid #f1f5f9;">
                     <button type="button" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px;" onclick="removeIntegranteTam(this)">✕</button>
                 </td>
@@ -179,8 +179,6 @@
             {% endfor %}
         {% else %}
             <tr class="integrante-row">
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control integrante-nombre" required placeholder="Nombre completo" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
-                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control integrante-doc" placeholder="Cédula / ID" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
                 <td style="padding: 6px 14px; border: 1px solid #f1f5f9;">
                     <select name="integrante_perfil[]" class="form-control integrante-cargo" required style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box; background: white;" onchange="onCargoCambioTam(this)">
                         <option value="">— Cargo —</option>
@@ -193,6 +191,8 @@
                         <option>Estudiante</option>
                     </select>
                 </td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_nombre[]" class="form-control integrante-nombre" required placeholder="Nombre completo" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
+                <td style="padding: 6px 14px; border: 1px solid #f1f5f9;"><input type="text" name="integrante_doc[]" class="form-control integrante-doc" placeholder="Cédula / ID" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; font-size: 13px; box-sizing: border-box;"></td>
                 <td style="text-align: center; border: 1px solid #f1f5f9;">
                     <button type="button" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px;" onclick="removeIntegranteTam(this)">✕</button>
                 </td>
@@ -414,8 +414,8 @@ function buildDocInput(doc) {
 async function onCargoCambioTam(selectEl) {
     const cargo = selectEl.value;
     const row   = selectEl.closest('tr');
-    const tdNom = row.querySelector('td:nth-child(1)');
-    const tdDoc = row.querySelector('td:nth-child(2)');
+    const tdNom = row.querySelector('td:nth-child(2)');
+    const tdDoc = row.querySelector('td:nth-child(3)');
 
     if (!cargo || cargo === 'Estudiante') {
         // Free text for Estudiante or empty
@@ -454,11 +454,11 @@ async function onCargoCambioTam(selectEl) {
 
 function makeRowTam(nombre, doc, cargo) {
     return `
-        <td style="padding:6px 14px;border:1px solid #f1f5f9;">${buildNombreInput(nombre)}</td>
-        <td style="padding:6px 14px;border:1px solid #f1f5f9;">${buildDocInput(doc)}</td>
         <td style="padding:6px 14px;border:1px solid #f1f5f9;">
             <select name="integrante_perfil[]" class="form-control integrante-cargo" required style="${SELECT_STYLE}" onchange="onCargoCambioTam(this)">${buildCargoOptions(cargo)}</select>
         </td>
+        <td style="padding:6px 14px;border:1px solid #f1f5f9;">${buildNombreInput(nombre)}</td>
+        <td style="padding:6px 14px;border:1px solid #f1f5f9;">${buildDocInput(doc)}</td>
         <td style="text-align:center;border:1px solid #f1f5f9;">
             <button type="button" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:18px;" onclick="removeIntegranteTam(this)">✕</button>
         </td>`;
