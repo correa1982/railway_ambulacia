@@ -85,27 +85,27 @@
             </div>
             <div>
                 <label>N° Identificación</label>
-                <input type="text" name="identificacion_paciente" required id="ident_mci" value="{{ paciente.identificacion_paciente or '' if paciente else '' }}" placeholder="Ej.12345678">
+                <input type="text" name="identificacion_paciente" required id="ident_mci" value="{{ paciente.identificacion_paciente or '' if paciente else '' }}" placeholder="Ej.12345678" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             </div>
         </div>
         <div class="row" style="margin-top:12px;">
             <div>
                 <label>Primer Apellido</label>
-                <input type="text" name="primer_apellido" required value="{{ paciente.primer_apellido or '' if paciente else '' }}" placeholder="Primer apellido">
+                <input type="text" name="primer_apellido" required value="{{ paciente.primer_apellido or '' if paciente else '' }}" placeholder="Primer apellido" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, '')">
             </div>
             <div>
                 <label>Segundo Apellido</label>
-                <input type="text" name="segundo_apellido" value="{{ paciente.segundo_apellido or '' if paciente else '' }}" placeholder="Segundo apellido (opcional)">
+                <input type="text" name="segundo_apellido" value="{{ paciente.segundo_apellido or '' if paciente else '' }}" placeholder="Segundo apellido (opcional)" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, '')">
             </div>
         </div>
         <div class="row" style="margin-top:12px;">
             <div>
                 <label>Primer Nombre</label>
-                <input type="text" name="primer_nombre" required value="{{ paciente.primer_nombre or '' if paciente else '' }}" placeholder="Primer Nombre">
+                <input type="text" name="primer_nombre" required value="{{ paciente.primer_nombre or '' if paciente else '' }}" placeholder="Primer Nombre" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, '')">
             </div>
             <div>
                 <label>Segundo Nombre</label>
-                <input type="text" name="segundo_nombre" value="{{ paciente.segundo_nombre or '' if paciente else '' }}" placeholder="Segundo nombre (opcional)">
+                <input type="text" name="segundo_nombre" value="{{ paciente.segundo_nombre or '' if paciente else '' }}" placeholder="Segundo nombre (opcional)" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, '')">
             </div>
         </div>
         <div class="row" style="margin-top:12px;">
