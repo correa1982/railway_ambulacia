@@ -233,6 +233,10 @@
         <div class="tab-icon-wrapper"><i class="ph ph-shield-plus"></i></div>
         <span class="tab-label">SOAT</span>
     </a>
+    <a href="{{ url_for('admin_checklists', tipo='archivador') }}" class="tab-btn {{ 'active' if tipo == 'archivador' }}">
+        <div class="tab-icon-wrapper"><i class="ph ph-archive"></i></div>
+        <span class="tab-label">Archivador</span>
+    </a>
 </div>
 
 {% if tipo == 'vehiculos' %}
@@ -551,6 +555,147 @@
     <p>Use el formulario de arriba para agregar la primera.</p>
 </div>
 {% endif %}
+
+{% elif tipo == 'archivador' %}
+<!-- ══════════ GESTIÓN DE ÍTEMS DEL ARCHIVADOR ══════════ -->
+
+<!-- Formulario y Tabla de Categorías -->
+<div class="add-form" style="margin-bottom: 24px; border-color: #fcd34d; background: #fffbeb;">
+    <h3 style="color: #92400e;">📁 Gestión de Categorías para ARCHIVADOR</h3>
+    
+    <form method="POST" action="{{ url_for('archivador_categoria_agregar') }}" style="margin-bottom: 16px;">
+        <div class="add-row">
+            <div class="field">
+                <label>Nueva Categoría</label>
+                <input type="text" name="nombre" required placeholder="Ej. Financiero">
+            </div>
+            <div>
+                <button type="submit" class="btn-add" style="background: #f59e0b; color: white;">➕ Añadir Categoría</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="table-responsive" style="margin-bottom: 0;">
+        <table class="items-table" style="margin-bottom: 0;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre de la Categoría</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in archivador_categorias %}
+                <tr style="{{ 'opacity: 0.6;' if cat.activo != 1 }}">
+                    <td style="color: #94a3b8; font-weight: 600;">{{ cat.id }}</td>
+                    <td style="font-weight: 600;">{{ cat.nombre }}</td>
+                    <td style="text-align: center;">
+                        {% if cat.activo == 1 %}
+                            <span class="status-active">✓ Activo</span>
+                        {% else %}
+                            <span class="status-inactive">✗ Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        <div style="display:flex; gap:6px; justify-content:center; align-items: center;">
+                            <form method="POST" action="{{ url_for('archivador_categoria_toggle', id=cat.id) }}" style="margin:0; display:inline;">
+                                <button type="submit" class="action-btn btn-toggle">
+                                    {{ '⏸ Desactivar' if cat.activo == 1 else '▶ Activar' }}
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('archivador_categoria_eliminar', id=cat.id) }}" style="margin:0; display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar la categoría «{{ cat.nombre }}»?');">
+                                <button type="submit" class="action-btn btn-delete">
+                                    🗑 Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">No hay categorías registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Formulario para agregar formulario del archivador -->
+<div class="add-form">
+    <h3>➕ Agregar nuevo formulario para ARCHIVADOR</h3>
+    <form method="POST" action="{{ url_for('archivador_formulario_agregar') }}">
+        <div class="add-row">
+            <div class="field" style="flex: 2;">
+                <label>Nombre del formulario</label>
+                <input type="text" name="nombre" required placeholder="Ej. Consentimiento Informado">
+            </div>
+            <div>
+                <button type="submit" class="btn-add">➕ Agregar Formulario</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<h2 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b; margin: 20px 0 10px; display: flex; align-items: center; gap: 8px;">
+    📋 Formularios Registrados
+    <span style="font-size: 11px; background: #f1f5f9; padding: 2px 8px; border-radius: 10px; color: #94a3b8;">{{ archivador_formularios|length }}</span>
+</h2>
+
+<div class="table-responsive">
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nombre del Formulario</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in archivador_formularios %}
+            <tr style="{{ 'opacity: 0.6;' if f.activo != 1 }}">
+                <td style="color: #94a3b8; font-weight: 600;">{{ f.id }}</td>
+                <td style="font-weight: 600;">
+                    <form method="POST" action="{{ url_for('archivador_formulario_editar', id=f.id) }}" style="display:flex; gap:6px;">
+                        <input type="text" name="nombre" value="{{ f.nombre }}" style="padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; width:100%;" required>
+                        <button type="submit" style="background:#1e6fbf; color:white; border:none; border-radius:4px; padding:4px 8px; font-size:11px; cursor:pointer;">Guardar</button>
+                    </form>
+                </td>
+                <td style="text-align: center;">
+                    {% if f.activo == 1 %}
+                        <span class="status-active">✓ Activo</span>
+                    {% else %}
+                        <span class="status-inactive">✗ Inactivo</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: center;">
+                    <div style="display:flex; gap:6px; justify-content:center; align-items: center;">
+                        <form method="POST" action="{{ url_for('archivador_formulario_toggle', id=f.id) }}" style="margin:0; display:inline;">
+                            <button type="submit" class="action-btn btn-toggle">
+                                {{ '⏸ Desactivar' if f.activo == 1 else '▶ Activar' }}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('archivador_formulario_eliminar', id=f.id) }}" style="margin:0; display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar el formulario «{{ f.nombre }}»?');">
+                            <button type="submit" class="action-btn btn-delete">
+                                🗑 Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">No hay formularios registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p style="font-size:12px; color:#64748b; margin: 8px 0 0;">
+    <i class="ph ph-info"></i> Los formularios nuevos también se agregan automáticamente al usar la opción «Otro» al subir un documento.
+</p>
 
 {% else %}
 <!-- ══════════ GESTIÓN DE ÍTEMS DE CHECKLISTS ══════════ -->

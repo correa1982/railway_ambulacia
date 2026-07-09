@@ -5,15 +5,21 @@ from werkzeug.utils import secure_filename
 from db import get_db
 from utils import login_required, ahora, get_user_info
 
-CATEGORIAS = [
-    "Administrativo",
-    "Médico",
-    "Legal",
-    "Operativo",
-    "Capacitación",
-    "Mantenimiento",
-    "Otro"
-]
+def get_categorias(conn):
+    rows = conn.execute("SELECT * FROM archivador_categorias ORDER BY activo DESC, nombre ASC").fetchall()
+    return rows
+
+def get_categoria_nombres(conn):
+    rows = conn.execute("SELECT nombre FROM archivador_categorias WHERE activo = 1 ORDER BY nombre ASC").fetchall()
+    return [r["nombre"] for r in rows]
+
+def get_nombres_formulario(conn):
+    rows = conn.execute("SELECT nombre FROM archivador_formularios WHERE activo = 1 ORDER BY nombre ASC").fetchall()
+    return [r["nombre"] for r in rows]
+
+def get_formularios(conn):
+    rows = conn.execute("SELECT * FROM archivador_formularios ORDER BY activo DESC, nombre ASC").fetchall()
+    return rows
 
 def register_routes(app):
     @app.route("/archivador")
@@ -45,6 +51,7 @@ def register_routes(app):
             params.append(fecha_hasta)
 
         archivos = conn.execute(f"SELECT * FROM archivador WHERE {where} ORDER BY id DESC", params).fetchall()
+        categorias = get_categoria_nombres(conn)
         conn.close()
 
         return render_template(
@@ -54,7 +61,7 @@ def register_routes(app):
             categoria_filter=categoria_filter,
             fecha_desde=fecha_desde,
             fecha_hasta=fecha_hasta,
-            categorias=CATEGORIAS
+            categorias=categorias
         )
 
     @app.route("/archivador/nuevo", methods=["GET", "POST"])
@@ -73,7 +80,6 @@ def register_routes(app):
             fecha_documento = request.form.get("fecha_documento", "").strip()
             files = request.files.getlist("archivo")
 
-            # Filter out empty files
             files = [f for f in files if f and f.filename]
 
             if not nombre_formulario or not files:
@@ -90,6 +96,13 @@ def register_routes(app):
                 current_consecutivo = (max_consecutivo_row["max_c"] or 0) + 1
             except Exception:
                 current_consecutivo = 1
+
+            existing_frm = conn.execute("SELECT id FROM archivador_formularios WHERE nombre = ?", (nombre_formulario,)).fetchone()
+            if not existing_frm:
+                try:
+                    conn.execute("INSERT INTO archivador_formularios (nombre, activo) VALUES (?, 1)", (nombre_formulario,))
+                except Exception:
+                    pass
 
             upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'archivador')
             os.makedirs(upload_folder, exist_ok=True)
@@ -140,35 +153,14 @@ def register_routes(app):
             flash(msg, "success")
             return redirect(url_for("archivador_list"))
 
-        nombres_db = conn.execute("SELECT DISTINCT nombre_formulario FROM archivador ORDER BY nombre_formulario").fetchall()
-        nombres_formulario = [row["nombre_formulario"] for row in nombres_db]
-
-        default_forms = [
-            "Calif. Atención",
-            "Seguridad del Paciente",
-            "Historia Clínica Individual",
-            "Atención Vehículo de Intervención",
-            "Preoperacional Conductores",
-            "Check List TAM",
-            "Check List TAB",
-            "Check List Avanzada",
-            "Check List PASB",
-            "Check List PASM",
-            "Preoperacional de Equipos",
-            "Formulario de Eventos",
-            "Atención Colectiva"
-        ]
-        for df in default_forms:
-            if df not in nombres_formulario:
-                nombres_formulario.append(df)
-
-        nombres_formulario.sort()
+        nombres_formulario = get_nombres_formulario(conn)
+        categorias = get_categoria_nombres(conn)
         conn.close()
 
         return render_template(
             "archivador_nuevo.html",
             nombres_formulario=nombres_formulario,
-            categorias=CATEGORIAS,
+            categorias=categorias,
             archivo=None
         )
 
@@ -198,7 +190,6 @@ def register_routes(app):
             archivo_nombre = archivo["archivo_nombre"]
 
             if file and file.filename:
-                # Delete old file
                 old_path = os.path.join(current_app.root_path, archivo["archivo_url"].lstrip('/'))
                 if os.path.exists(old_path):
                     os.remove(old_path)
@@ -227,40 +218,27 @@ def register_routes(app):
                 id
             ))
 
+            existing_frm = conn.execute("SELECT id FROM archivador_formularios WHERE nombre = ?", (nombre_formulario,)).fetchone()
+            if not existing_frm:
+                try:
+                    conn.execute("INSERT INTO archivador_formularios (nombre, activo) VALUES (?, 1)", (nombre_formulario,))
+                except Exception:
+                    pass
+
             conn.commit()
             conn.close()
 
             flash("Documento actualizado correctamente.", "success")
             return redirect(url_for("archivador_list"))
 
-        nombres_db = conn.execute("SELECT DISTINCT nombre_formulario FROM archivador ORDER BY nombre_formulario").fetchall()
-        nombres_formulario = [row["nombre_formulario"] for row in nombres_db]
-        default_forms = [
-            "Calif. Atención",
-            "Seguridad del Paciente",
-            "Historia Clínica Individual",
-            "Atención Vehículo de Intervención",
-            "Preoperacional Conductores",
-            "Check List TAM",
-            "Check List TAB",
-            "Check List Avanzada",
-            "Check List PASB",
-            "Check List PASM",
-            "Preoperacional de Equipos",
-            "Formulario de Eventos",
-            "Atención Colectiva"
-        ]
-        for df in default_forms:
-            if df not in nombres_formulario:
-                nombres_formulario.append(df)
-        nombres_formulario.sort()
-
+        nombres_formulario = get_nombres_formulario(conn)
+        categorias = get_categoria_nombres(conn)
         conn.close()
 
         return render_template(
             "archivador_nuevo.html",
             nombres_formulario=nombres_formulario,
-            categorias=CATEGORIAS,
+            categorias=categorias,
             archivo=archivo
         )
 
@@ -283,3 +261,170 @@ def register_routes(app):
 
         flash("Archivo eliminado correctamente.", "success")
         return redirect(url_for("archivador_list"))
+
+    # ════════════════════════════════════════════
+    #  GESTIÓN DE ÍTEMS DEL ARCHIVADOR
+    # ════════════════════════════════════════════
+
+    @app.route("/archivador/gestion")
+    @login_required
+    def archivador_gestion():
+        conn = get_db()
+        categorias = get_categorias(conn)
+        formularios = get_nombres_formulario(conn)
+        conn.close()
+        return render_template(
+            "archivador_gestion.html",
+            categorias=categorias,
+            formularios=formularios,
+            usuario=session["usuario"]
+        )
+
+    @app.route("/archivador/gestion/categoria/agregar", methods=["POST"])
+    @login_required
+    def archivador_categoria_agregar():
+        nombre = request.form.get("nombre", "").strip()
+        if not nombre:
+            flash("El nombre de la categoría es obligatorio.", "error")
+            return redirect(url_for("admin_checklists", tipo="archivador"))
+
+        conn = get_db()
+        try:
+            conn.execute("INSERT INTO archivador_categorias (nombre, activo) VALUES (?, 1)", (nombre,))
+            conn.commit()
+            flash(f"Categoría '{nombre}' agregada con éxito.", "success")
+        except Exception as e:
+            if "Duplicate" in str(e) or "UNIQUE" in str(e):
+                flash(f"La categoría '{nombre}' ya existe.", "error")
+            else:
+                flash(f"Error al agregar la categoría: {e}", "error")
+        conn.close()
+        return redirect(url_for("admin_checklists", tipo="archivador"))
+
+    @app.route("/archivador/gestion/categoria/toggle/<int:id>", methods=["POST"])
+    @login_required
+    def archivador_categoria_toggle(id):
+        conn = get_db()
+        cat = conn.execute("SELECT * FROM archivador_categorias WHERE id = ?", (id,)).fetchone()
+        if not cat:
+            flash("Categoría no encontrada.", "error")
+            conn.close()
+            return redirect(url_for("admin_checklists", tipo="archivador"))
+
+        new_status = 0 if cat["activo"] == 1 else 1
+        conn.execute("UPDATE archivador_categorias SET activo = ? WHERE id = ?", (new_status, id))
+        conn.commit()
+        conn.close()
+
+        status_label = "activada" if new_status == 1 else "desactivada"
+        flash(f"Categoría '{cat['nombre']}' {status_label}.", "success")
+        return redirect(url_for("admin_checklists", tipo="archivador"))
+
+    @app.route("/archivador/gestion/categoria/eliminar/<int:id>", methods=["POST"])
+    @login_required
+    def archivador_categoria_eliminar(id):
+        conn = get_db()
+        cat = conn.execute("SELECT * FROM archivador_categorias WHERE id = ?", (id,)).fetchone()
+        if not cat:
+            flash("Categoría no encontrada.", "error")
+            conn.close()
+            return redirect(url_for("admin_checklists", tipo="archivador"))
+
+        conn.execute("DELETE FROM archivador_categorias WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+
+        flash(f"Categoría '{cat['nombre']}' eliminada.", "success")
+        return redirect(url_for("admin_checklists", tipo="archivador"))
+
+    @app.route("/archivador/gestion/formulario/agregar", methods=["POST"])
+    @login_required
+    def archivador_formulario_agregar():
+        nombre = request.form.get("nombre", "").strip()
+        if not nombre:
+            flash("El nombre del formulario es obligatorio.", "error")
+            return redirect(url_for("admin_checklists", tipo="archivador"))
+
+        conn = get_db()
+        try:
+            conn.execute("INSERT INTO archivador_formularios (nombre, activo) VALUES (?, 1)", (nombre,))
+            conn.commit()
+            flash(f"Formulario '{nombre}' agregado con éxito.", "success")
+        except Exception as e:
+            if "Duplicate" in str(e) or "UNIQUE" in str(e):
+                flash(f"El formulario '{nombre}' ya existe.", "error")
+            else:
+                flash(f"Error al agregar el formulario: {e}", "error")
+        conn.close()
+        return redirect(url_for("admin_checklists", tipo="archivador"))
+
+    @app.route("/archivador/gestion/formulario/editar/<int:id>", methods=["POST"])
+    @login_required
+    def archivador_formulario_editar(id):
+        nuevo_nombre = request.form.get("nombre", "").strip()
+        if not nuevo_nombre:
+            flash("El nombre del formulario es obligatorio.", "error")
+            return redirect(url_for("admin_checklists", tipo="archivador"))
+
+        conn = get_db()
+        frm = conn.execute("SELECT * FROM archivador_formularios WHERE id = ?", (id,)).fetchone()
+        if not frm:
+            flash("Formulario no encontrado.", "error")
+            conn.close()
+            return redirect(url_for("admin_checklists", tipo="archivador"))
+
+        old_nombre = frm["nombre"]
+        try:
+            conn.execute("UPDATE archivador_formularios SET nombre = ? WHERE id = ?", (nuevo_nombre, id))
+            conn.commit()
+            flash(f"Formulario '{old_nombre}' renombrado a '{nuevo_nombre}'.", "success")
+        except Exception as e:
+            if "Duplicate" in str(e) or "UNIQUE" in str(e):
+                flash(f"Ya existe un formulario con el nombre '{nuevo_nombre}'.", "error")
+            else:
+                flash(f"Error al editar: {e}", "error")
+        conn.close()
+        return redirect(url_for("admin_checklists", tipo="archivador"))
+
+    @app.route("/archivador/gestion/formulario/toggle/<int:id>", methods=["POST"])
+    @login_required
+    def archivador_formulario_toggle(id):
+        conn = get_db()
+        frm = conn.execute("SELECT * FROM archivador_formularios WHERE id = ?", (id,)).fetchone()
+        if not frm:
+            flash("Formulario no encontrado.", "error")
+            conn.close()
+            return redirect(url_for("admin_checklists", tipo="archivador"))
+
+        new_status = 0 if frm["activo"] == 1 else 1
+        conn.execute("UPDATE archivador_formularios SET activo = ? WHERE id = ?", (new_status, id))
+        conn.commit()
+        conn.close()
+
+        status_label = "activado" if new_status == 1 else "desactivado"
+        flash(f"Formulario '{frm['nombre']}' {status_label}.", "success")
+        return redirect(url_for("admin_checklists", tipo="archivador"))
+
+    @app.route("/archivador/gestion/formulario/eliminar/<int:id>", methods=["POST"])
+    @login_required
+    def archivador_formulario_eliminar(id):
+        conn = get_db()
+        frm = conn.execute("SELECT * FROM archivador_formularios WHERE id = ?", (id,)).fetchone()
+        if not frm:
+            flash("Formulario no encontrado.", "error")
+            conn.close()
+            return redirect(url_for("admin_checklists", tipo="archivador"))
+
+        conn.execute("DELETE FROM archivador_formularios WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+
+        flash(f"Formulario '{frm['nombre']}' eliminado.", "success")
+        return redirect(url_for("admin_checklists", tipo="archivador"))
+
+    @app.route("/static/uploads/archivador/<path:filename>")
+    def uploaded_archivador_file(filename):
+        return send_from_directory(
+            os.path.join(current_app.root_path, 'static', 'uploads', 'archivador'),
+            filename
+        )

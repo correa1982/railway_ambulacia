@@ -1139,6 +1139,51 @@ def init_db():
     except Exception as e:
         print("Error al migrar la tabla archivador:", e)
 
+    # ── archivador_categorias table ──
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS archivador_categorias (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            nombre VARCHAR(255) NOT NULL UNIQUE,
+            activo INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT (DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s'))
+        )
+    """)
+    cat_count = conn.execute("SELECT COUNT(*) as count FROM archivador_categorias").fetchone()["count"]
+    if cat_count == 0:
+        default_categorias = [
+            "Administrativo", "Médico", "Legal",
+            "Operativo", "Capacitación", "Mantenimiento", "Otro"
+        ]
+        for c in default_categorias:
+            try:
+                conn.execute("INSERT INTO archivador_categorias (nombre, activo) VALUES (?, 1)", (c,))
+            except Exception:
+                pass
+
+    # ── archivador_formularios table ──
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS archivador_formularios (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            nombre VARCHAR(255) NOT NULL UNIQUE,
+            activo INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT (DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s'))
+        )
+    """)
+    frm_count = conn.execute("SELECT COUNT(*) as count FROM archivador_formularios").fetchone()["count"]
+    if frm_count == 0:
+        default_formularios = [
+            "Calif. Atención", "Seguridad del Paciente", "Historia Clínica Individual",
+            "Atención Vehículo de Intervención", "Preoperacional Conductores",
+            "Check List TAM", "Check List TAB", "Check List Avanzada",
+            "Check List PASB", "Check List PASM", "Preoperacional de Equipos",
+            "Formulario de Eventos", "Atención Colectiva"
+        ]
+        for f in default_formularios:
+            try:
+                conn.execute("INSERT INTO archivador_formularios (nombre, activo) VALUES (?, 1)", (f,))
+            except Exception:
+                pass
+
     # ── Additional indexes for query performance ──
     cursor.execute("SHOW INDEX FROM preoperacional")
     preop_idx = [row["Key_name"] for row in cursor.fetchall()]

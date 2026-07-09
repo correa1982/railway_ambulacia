@@ -208,7 +208,7 @@ def register_routes(app):
     @admin_required
     def admin_checklists():
         tipo = request.args.get("tipo", "vehiculos")
-        if tipo not in ("tam", "tab", "pasb", "pasm", "preoperacional", "vehiculos", "aseguradoras", "aseguradoras_soat", "equipos", "calif_atencion", "segur_paciente", "avanzada"):
+        if tipo not in ("tam", "tab", "pasb", "pasm", "preoperacional", "vehiculos", "aseguradoras", "aseguradoras_soat", "equipos", "calif_atencion", "segur_paciente", "avanzada", "archivador"):
             tipo = "tam"
         conn = get_db()
         
@@ -276,7 +276,17 @@ def register_routes(app):
             conn.close()
             return render_template("admin_checklists.html", items=[], categorias=[], tipo=tipo,
                                    aseguradoras_soat_todas=soat_list, usuario=session["usuario"])
-        
+
+        # When showing archivador tab
+        if tipo == "archivador":
+            from routes.routes_archivador import get_formularios, get_categorias
+            categorias_arch = get_categorias(conn)
+            formularios = get_formularios(conn)
+            conn.close()
+            return render_template("admin_checklists.html", items=[], categorias=[], tipo=tipo,
+                                   archivador_categorias=categorias_arch, archivador_formularios=formularios,
+                                   usuario=session["usuario"])
+
         items = conn.execute(
             "SELECT * FROM checklist_items WHERE tipo_checklist = ? ORDER BY categoria, id",
             (tipo,)
