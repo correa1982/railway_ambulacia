@@ -73,9 +73,12 @@
 .items-table th {
     background: linear-gradient(135deg, #ebf4ff, #dbeafe); font-size: 10px;
     text-transform: uppercase; letter-spacing: 0.5px; color: #1e40af;
-    padding: 10px 14px; border: 1px solid #e2e8f0; text-align: left;
+    padding: 4px 6px; border: 1px solid #e2e8f0; text-align: center;
+    white-space: nowrap;
 }
-.items-table td { padding: 10px 14px; border: 1px solid #f1f5f9; font-size: 13px; vertical-align: middle; }
+.items-table td { padding: 4px 6px; border: 1px solid #f1f5f9; font-size: 11.5px; vertical-align: middle; text-align: center; white-space: nowrap; }
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 24px; }
+.table-responsive .items-table { margin-bottom: 0; min-width: 800px; }
 .items-table tr:hover td { background: #fafcff; }
 
 .cat-badge {
@@ -305,20 +308,21 @@
 </h2>
 
 {% if vehiculos|length > 0 %}
+<div class="table-responsive">
 <table class="items-table">
     <thead>
         <tr>
-            <th style="width: 3%;">#</th>
-            <th style="width: 12%;">Tipo de Vehículo</th>
-            <th style="width: 10%;">Tipo / Móvil</th>
-            <th style="width: 10%;">Placa</th>
-            <th style="width: 10%;">Marca</th>
-            <th style="width: 10%;">Serie</th>
-            <th style="width: 8%;">Modelo</th>
-            <th style="width: 13%;">Vigencia SOAT</th>
-            <th style="width: 13%;">Vigencia RTM</th>
-            <th style="width: 8%;">Estado</th>
-            <th style="width: 15%; text-align: center;">Acciones</th>
+            <th>#</th>
+            <th>Tipo de Vehículo</th>
+            <th>Tipo / Móvil</th>
+            <th>Placa</th>
+            <th>Marca</th>
+            <th>Serie</th>
+            <th>Modelo</th>
+            <th>Vigencia SOAT</th>
+            <th>Vigencia RTM</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -402,6 +406,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% else %}
 <div style="text-align:center; padding: 40px; color: #94a3b8; font-size: 15px;">
     <p style="font-size: 40px; margin-bottom: 10px;">🚗</p>
@@ -433,13 +438,14 @@
 </h2>
 
 {% if aseguradoras_todas|length > 0 %}
+<div class="table-responsive">
 <table class="items-table">
     <thead>
         <tr>
-            <th style="width: 5%;">#</th>
-            <th style="width: 55%;">Nombre de la Aseguradora</th>
-            <th style="width: 15%; text-align: center;">Estado</th>
-            <th style="width: 25%; text-align: center;">Acciones</th>
+            <th>#</th>
+            <th>Nombre de la Aseguradora</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -469,6 +475,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% else %}
 <div style="text-align:center; padding: 40px; color: #94a3b8; font-size: 15px;">
     <p style="font-size: 40px; margin-bottom: 10px;">🗂️</p>
@@ -499,13 +506,14 @@
 </h2>
 
 {% if aseguradoras_soat_todas|length > 0 %}
+<div class="table-responsive">
 <table class="items-table">
     <thead>
         <tr>
-            <th style="width: 5%;">#</th>
-            <th style="width: 55%;">Nombre de la Aseguradora SOAT</th>
-            <th style="width: 15%; text-align: center;">Estado</th>
-            <th style="width: 25%; text-align: center;">Acciones</th>
+            <th>#</th>
+            <th>Nombre de la Aseguradora SOAT</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -535,6 +543,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% else %}
 <div style="text-align:center; padding: 40px; color: #94a3b8; font-size: 15px;">
     <p style="font-size: 40px; margin-bottom: 10px;">🚗</p>
@@ -563,11 +572,12 @@
     </form>
     
     {% if categorias %}
+    <div class="table-responsive" style="margin-bottom: 0;">
     <table class="items-table" style="margin-bottom: 0;">
         <thead><tr>
-            <th style="width: 50%;">Nombre de la Categoría</th>
-            <th style="width: 15%;">Estado</th>
-            <th style="width: 35%; text-align: center;">Acciones</th>
+            <th>Nombre de la Categoría</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr></thead>
         <tbody>
         {% for cat in categorias %}
@@ -594,6 +604,7 @@
         {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <div style="font-size:13px; color:#92400e;">No hay categorías creadas. Cree una arriba para poder agregar ítems.</div>
     {% endif %}
@@ -662,16 +673,17 @@
     {{ cat.replace('_', ' ')|capitalize }}
     <span style="font-size: 11px; background: #f1f5f9; padding: 2px 8px; border-radius: 10px; color: #94a3b8;">{{ items_por_cat[cat]|length }}</span>
 </h2>
+<div class="table-responsive">
 <table class="items-table">
 <thead><tr>
-    <th style="width: 5%;">#</th>
-    <th style="width: {% if tipo in ('tam', 'tab', 'pasm', 'pasb', 'avanzada') %}35%{% else %}45%{% endif %};">Nombre del Ítem</th>
+    <th>#</th>
+    <th>Nombre del Ítem</th>
     {% if tipo in ('tam', 'tab', 'pasm', 'pasb', 'avanzada') %}
-    <th style="width: 10%;">Cantidad</th>
+    <th>Cantidad</th>
     {% endif %}
-    <th style="width: 15%;">Identificador</th>
-    <th style="width: 10%;">Estado</th>
-    <th style="width: 25%; text-align: center;">Acciones</th>
+    <th>Identificador</th>
+    <th>Estado</th>
+    <th>Acciones</th>
 </tr></thead>
 <tbody>
 {% for item in items_por_cat[cat] %}
@@ -702,6 +714,7 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 {% endfor %}
 
 {% endif %}
