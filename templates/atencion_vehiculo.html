@@ -2,6 +2,14 @@
 {% block title %}{% if item %}Editar{% else %}Nueva{% endif %} Atención Vehículo de Intervención{% endblock %}
 {% block content %}
 
+<style>
+/* Dictation Button */
+.btn-dictar { background: #eff6ff; border: 1px solid #bfdbfe; color: #3b82f6; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; padding: 0; }
+.btn-dictar:hover { background: #dbeafe; }
+.btn-dictar.recording { background: #fee2e2; border-color: #fca5a5; color: #ef4444; animation: pulse-record 1.5s infinite; }
+@keyframes pulse-record { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 6px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+</style>
+
 <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px; padding-bottom:14px; border-bottom:2px solid #dbeafe;">
     <div style="display:flex; align-items:center; gap:15px;">
         <a href="{{ url_for('dashboard') }}" style="display:inline-flex; align-items:center; gap:5px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; padding:6px 12px; border-radius:6px; text-decoration:none; font-weight:600; font-size:13px;">
@@ -152,8 +160,11 @@
     <!-- ── Descripción ── -->
     <fieldset style="margin-top:20px;">
         <legend>📝 Descripción y Observaciones</legend>
-        <div>
-            <label>Descripción del Evento <span style="color:#ef4444">*</span></label>
+        <div style="position: relative;">
+            <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span>Descripción del Evento <span style="color:#ef4444">*</span></span>
+                <button type="button" class="btn-dictar" tabindex="-1" title="Dictar por voz" onclick="startDictation(this, this.parentElement.nextElementSibling)"><i class="ph ph-microphone"></i></button>
+            </label>
             <textarea name="descripcion" required placeholder="Escriba aquí la descripción detallada..." style="width:100%; min-height:120px; box-sizing:border-box;">{{ item.descripcion or '' }}</textarea>
         </div>
     </fieldset>
@@ -616,6 +627,52 @@
 
     renderEquiposRows();
 })();
+</script>
+<script>
+// ── Dictado por Voz ──
+let currentRecognition = null;
+function startDictation(btn, targetTextarea) {
+    if (currentRecognition) {
+        currentRecognition.stop();
+        currentRecognition = null;
+        document.querySelectorAll('.btn-dictar').forEach(b => b.classList.remove('recording'));
+        return;
+    }
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("El dictado por voz no está soportado en este navegador. Intente usar Chrome o Safari.");
+        return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.lang = 'es-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = function() {
+        btn.classList.add('recording');
+        currentRecognition = recognition;
+    };
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        if (targetTextarea.value) {
+            targetTextarea.value += " " + transcript;
+        } else {
+            targetTextarea.value = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+        }
+        targetTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    recognition.onerror = function(event) {
+        if (event.error !== 'no-speech') {
+            alert("Error en el dictado de voz: " + event.error);
+        }
+    };
+    recognition.onend = function() {
+        btn.classList.remove('recording');
+        currentRecognition = null;
+    };
+    recognition.start();
+}
 </script>
 
 {% endblock %}
