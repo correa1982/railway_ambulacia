@@ -44,6 +44,14 @@ def ensure_db_initialized():
                 mimetype='text/html'
             )
 
+@app.after_request
+def add_cache_control(response):
+    if 'Cache-Control' not in response.headers:
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+    return response
+
 @app.template_filter('encode_id')
 def encode_id_filter(id_val):
     if not id_val:

@@ -386,7 +386,7 @@ def register_routes(app, serializer, TIPOS_DOCUMENTO, TIPOS_AFILIACION, ASEGURAD
                 if paciente.get("finalizado") == 1:
                     conn.close()
                     flash("Esta historia clínica ya ha sido finalizada y no puede ser modificada.", "error")
-                    return redirect(url_for("ver_hc", paciente_id=paciente.get("id")))
+                    return redirect(url_for("ver_hc", token=serializer.dumps(paciente.get("id"))))
                 atencion_colectiva_id = paciente.get("atencion_colectiva_id")
                 fecha_inicio_atencion = paciente.get("fecha_inicio_atencion")
                 # If loaded patient has atencion_colectiva_id, redirect to formulario_mci
