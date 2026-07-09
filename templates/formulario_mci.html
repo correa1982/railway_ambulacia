@@ -199,15 +199,13 @@
         <div class="row" style="margin-top:12px;">
             <div>
                 <label>Departamento de Residencia</label>
-                <select name="departamento_residencia" id="departamento_residencia_mci">
-                    <option value="">— Seleccione —</option>
-                </select>
+                <input type="text" name="departamento_residencia" id="departamento_residencia_mci" list="departamentos_list_mci" placeholder="Escriba o seleccione un departamento" value="{{ paciente.departamento_residencia or '' if paciente else '' }}" autocomplete="off">
+                <datalist id="departamentos_list_mci"></datalist>
             </div>
             <div>
                 <label>Municipio de Residencia</label>
-                <select name="municipio_residencia" id="municipio_residencia_mci" disabled>
-                    <option value="">— Seleccione —</option>
-                </select>
+                <input type="text" name="municipio_residencia" id="municipio_residencia_mci" list="municipios_list_mci" placeholder="Escriba o seleccione un municipio" value="{{ paciente.municipio_residencia or '' if paciente else '' }}" autocomplete="off" disabled>
+                <datalist id="municipios_list_mci"></datalist>
             </div>
         </div>
         <div class="row" style="margin-top:12px;" id="fila_barrio_mci" style="display: none;">
@@ -1084,6 +1082,8 @@ window.editarRegistroOffline = async function(id) {
 document.addEventListener('DOMContentLoaded', async function() {
     const depSelect = document.getElementById('departamento_residencia_mci');
     const munSelect = document.getElementById('municipio_residencia_mci');
+    const depList = document.getElementById('departamentos_list_mci');
+    const munList = document.getElementById('municipios_list_mci');
     const rowBarrio = document.getElementById('fila_barrio_mci');
     const barrioInput = document.getElementById('barrio_residencia_mci');
     const barriosList = document.getElementById('barrios_list_mci');
@@ -1129,8 +1129,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             Object.keys(deptMunMap).sort().forEach(dep => {
                 const opt = document.createElement('option');
                 opt.value = dep;
-                opt.textContent = dep;
-                depSelect.appendChild(opt);
+                depList.appendChild(opt);
             });
             if (activeDep) {
                 depSelect.value = activeDep;
@@ -1178,7 +1177,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 3. Manejar cambio de Departamento
     function actualizarMunicipios() {
-        munSelect.innerHTML = '<option value="">— Seleccione —</option>';
+        munList.innerHTML = '';
         munSelect.disabled = true;
         const dep = depSelect.value;
         if (dep && deptMunMap[dep]) {
@@ -1186,21 +1185,20 @@ document.addEventListener('DOMContentLoaded', async function() {
             muns.forEach(m => {
                 const opt = document.createElement('option');
                 opt.value = m;
-                opt.textContent = m;
-                munSelect.appendChild(opt);
+                munList.appendChild(opt);
             });
             munSelect.disabled = false;
         }
     }
 
-    depSelect.addEventListener('change', function() {
+    depSelect.addEventListener('input', function() {
         actualizarMunicipios();
         munSelect.dispatchEvent(new Event('change'));
     });
 
     // 4. Manejar cambio de Municipio (mostrar/ocultar Barrio)
-    munSelect.addEventListener('change', function() {
-        if (this.value === 'MEDELLIN') {
+    munSelect.addEventListener('input', function() {
+        if (this.value.toUpperCase() === 'MEDELLIN' || this.value.toUpperCase() === 'MEDELLÍN') {
             rowBarrio.style.display = 'flex';
         } else {
             rowBarrio.style.display = 'none';
