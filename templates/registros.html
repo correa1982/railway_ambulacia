@@ -108,6 +108,39 @@
 <tbody>
 {% for p in pacientes %}
 <tr>
+    {% if p.is_archivador %}
+    <td>
+        <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700;">📂 #{{ p.consecutivo }}</span>
+    </td>
+    <td style="font-size: 12px;">
+        <span style="color:#cbd5e1; font-style:italic; font-size:11px;">—</span>
+    </td>
+    <td>
+        <strong style="font-size: 13px;">{{ p.archivo_nombre }}</strong>
+        <span style="font-size:11px; color:#64748b; display:block;">(Documento adjunto desde Archivador)</span>
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="font-size: 12px;">
+        <strong>{{ p.registrado_por }}</strong>
+        {% if p.perfil_registrador %}
+        <span style="display:block; font-size:10px; color:#64748b; margin-top:1px;">
+            {{ p.perfil_registrador }}
+        </span>
+        {% endif %}
+    </td>
+    <td style="text-align: center;">
+        <span style="color:#cbd5e1; font-style:italic; font-size:11px;">—</span>
+    </td>
+    <td style="font-size: 11px; color: #64748b; white-space: nowrap;">{{ p.fecha_registro }}</td>
+    <td style="text-align: center; white-space: nowrap;">
+        <a href="{{ url_for('static', filename=p.archivo_url.split('/static/')[1]) if '/static/' in p.archivo_url else p.archivo_url }}" target="_blank" style="background:#4338ca; color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:700; white-space:nowrap; display:inline-block; margin-bottom:4px; box-shadow: 0 1px 3px rgba(67,56,202,0.3);">
+            👁 Ver
+        </a>
+    </td>
+    {% else %}
     <td>
         <span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700;">#{{ p.id }}</span>
     </td>

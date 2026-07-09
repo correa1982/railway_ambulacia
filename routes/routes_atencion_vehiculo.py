@@ -3,7 +3,7 @@ import os
 from datetime import datetime, date
 from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from db import get_db
-from utils import login_required, admin_required, get_user_info, ahora, hoy
+from utils import login_required, admin_required, get_user_info, ahora, hoy, get_archivador_as_items
 # _load_config imported lazily inside functions to avoid circular import
 
 def register_routes(app):
@@ -83,12 +83,21 @@ def register_routes(app):
         # Filtro por fecha en fecha_registro
         if fecha_filtro:
             fecha_like = f"{fecha_filtro}%"
-            items = conn.execute(
+            items_db = conn.execute(
                 "SELECT * FROM atencion_vehiculo WHERE fecha_registro LIKE ? ORDER BY id DESC", 
                 (fecha_like,)
             ).fetchall()
         else:
-            items = conn.execute("SELECT * FROM atencion_vehiculo ORDER BY id DESC").fetchall()
+            items_db = conn.execute("SELECT * FROM atencion_vehiculo ORDER BY id DESC").fetchall()
+            
+        items = [dict(i) for i in items_db]
+        
+        # Inject Archivador records
+        is_admin = (session["usuario"]["rol"] == "admin")
+        user_ident = session["usuario"]["identificacion"]
+        archivador_items = get_archivador_as_items(conn, "Atención Vehículo de Intervención", fecha_filtro, user_ident, is_admin)
+        items.extend(archivador_items)
+        items.sort(key=lambda x: x.get("id") or 0, reverse=True)
             
         conn.close()
         return render_template(

@@ -3,7 +3,7 @@ import os
 from datetime import datetime, date
 from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from db import get_db
-from utils import login_required, admin_required, calcular_edad, get_user_info, ahora, hoy
+from utils import login_required, admin_required, calcular_edad, get_user_info, ahora, hoy, get_archivador_as_items
 from itsdangerous import URLSafeSerializer, BadSignature
 from constants import REQUIRED_PATIENT_FIELDS, PATIENT_FULL_FIELDS, PATIENT_MCI_FIELDS, EXAMEN_FISICO_KEYS
 
@@ -673,7 +673,17 @@ def register_routes(app, serializer, TIPOS_DOCUMENTO, TIPOS_AFILIACION, ASEGURAD
         # Fetch records
         fetch_sql = f"SELECT * {base_sql} ORDER BY id DESC LIMIT ? OFFSET ?"
         params.extend([per_page, offset])
-        pacientes = conn.execute(fetch_sql, tuple(params)).fetchall()
+        pacientes_db = conn.execute(fetch_sql, tuple(params)).fetchall()
+        pacientes = [dict(p) for p in pacientes_db]
+        
+        # Inject Archivador records
+        if not atencion_colectiva_id:
+            archivador_items = get_archivador_as_items(conn, "Historia Clínica Individual", fecha_filtro, user_ident if not is_admin else None, is_admin)
+            # Apply search filter to archivador items if any
+            if search_query:
+                archivador_items = [item for item in archivador_items if search_query.lower() in item.get('archivo_nombre', '').lower()]
+            pacientes.extend(archivador_items)
+            pacientes.sort(key=lambda x: x.get("id") or 0, reverse=True)
 
         if atencion_colectiva_id:
             atencion_colectiva = conn.execute(

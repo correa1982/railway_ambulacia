@@ -345,6 +345,11 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="card-title">Estadísticas Globales</div>
         <div class="card-desc">Métricas y gráficas consolidadas de pacientes, eventos y operatividad.</div>
     </a>
+    <a href="{{ url_for('archivador_list') }}" class="dash-card" style="border-color: #e2e8f0;">
+        <div class="card-icon" style="background: #e0e7ff;"><i class="ph ph-files" style="color: #4338ca;"></i></div>
+        <div class="card-title">Archivador de Documentos</div>
+        <div class="card-desc">Sube y organiza documentos, con generación de consecutivos automáticos.</div>
+    </a>
 
     {% if session.usuario.rol == 'admin' %}
     <a href="{{ url_for('admin_mapa') }}" class="dash-card" style="border-color: #e2e8f0;">

@@ -3,7 +3,7 @@ import os
 from datetime import datetime, date
 from flask import render_template, request, redirect, url_for, session, flash, jsonify
 from db import get_db
-from utils import login_required, admin_required, calcular_edad, get_user_info, ahora, hoy
+from utils import login_required, admin_required, calcular_edad, get_user_info, ahora, hoy, get_archivador_as_items
 # _load_config imported lazily inside functions to avoid circular import
 from itsdangerous import URLSafeSerializer, BadSignature
 from constants import CHECKLIST_CONFIG, PASB_OPCIONES, PASM_OPCIONES
@@ -269,7 +269,16 @@ def register_routes(app):
         fecha_filtro = request.args.get("fecha", fecha_hoy)
         fecha_like = f"{fecha_filtro}%"
         
-        items = conn.execute(f"SELECT * FROM {cfg['table']} WHERE fecha_registro LIKE ? ORDER BY id DESC", (fecha_like,)).fetchall()
+        items_db = conn.execute(f"SELECT * FROM {cfg['table']} WHERE fecha_registro LIKE ? ORDER BY id DESC", (fecha_like,)).fetchall()
+        items = [dict(i) for i in items_db]
+        
+        # Inject Archivador records
+        is_admin = (session["usuario"]["rol"] == "admin")
+        user_ident = session["usuario"]["identificacion"]
+        archivador_items = get_archivador_as_items(conn, cfg["titulo"], fecha_filtro, user_ident, is_admin)
+        items.extend(archivador_items)
+        items.sort(key=lambda x: x.get("id") or 0, reverse=True)
+        
         conn.close()
         return render_template("registros_formulario.html", items=items,
                                tipo=tipo, titulo=cfg["titulo"],

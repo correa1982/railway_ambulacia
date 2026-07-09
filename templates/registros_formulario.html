@@ -83,6 +83,64 @@
 <tbody>
 {% for item in items %}
 <tr>
+    {% if item.is_archivador %}
+    <td><span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;">📂 #{{ item.consecutivo }}</span></td>
+    
+    {% if tipo == 'eventos' %}
+        <td>{{ item.fecha }}</td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Archivador)</span></td>
+        <td></td><td></td><td></td>
+    {% elif tipo == 'atencion_colectiva' %}
+        <td>{{ item.fecha }}</td>
+        <td></td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Archivador)</span></td>
+        <td></td><td></td><td></td><td></td>
+    {% elif tipo == 'preoperacional' %}
+        <td>{{ item.fecha }}</td>
+        <td>{{ item.hora or '—' }}</td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Archivador)</span></td>
+        <td></td><td></td><td></td>
+    {% elif tipo in ['tam','tab'] %}
+        <td>{{ item.fecha }}</td>
+        <td>{{ item.hora or '—' }}</td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Archivador)</span></td>
+        <td></td><td></td>
+    {% elif tipo == 'avanzada' %}
+        <td>{{ item.fecha }}</td>
+        <td>{{ item.hora or '—' }}</td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Archivador)</span></td>
+        <td></td><td></td>
+    {% elif tipo in ['pasb','pasm'] %}
+        <td>{{ item.fecha }}</td>
+        <td>{{ item.hora or '—' }}</td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Archivador)</span></td>
+        <td></td><td></td>
+    {% elif tipo == 'equipos' %}
+        <td>{{ item.fecha }}</td>
+        <td>{{ item.hora or '—' }}</td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Archivador)</span></td>
+        <td></td>
+    {% elif tipo in ['calif_atencion', 'segur_paciente'] %}
+        <td>{{ item.fecha }}</td>
+        <td>{{ item.hora or '—' }}</td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Documento adjunto desde Archivador)</span></td>
+        <td></td><td></td>
+    {% elif tipo == 'atencion_vehiculo' %}
+        <td>{{ item.fecha }} {{ item.hora }}</td>
+        <td></td>
+        <td><strong>{{ item.archivo_nombre }}</strong> <span style="font-size:11px; color:#64748b;">(Archivador)</span></td>
+        <td></td><td></td>
+    {% endif %}
+    
+    <td style="font-size:12px;"><strong>{{ item.registrado_por }}</strong>
+        <span style="display:block; font-size:10px; color:#64748b;">{{ item.perfil_registrador or '' }}</span></td>
+    <td style="font-size:11px; color:#64748b; white-space:nowrap;">{{ item.fecha_registro }}</td>
+    <td style="text-align:center;">
+        <a href="{{ url_for('static', filename=item.archivo_url.split('/static/')[1]) if '/static/' in item.archivo_url else item.archivo_url }}" target="_blank" style="background:#4338ca; color:white; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:700; white-space:nowrap;">
+            👁 Ver Documento
+        </a>
+    </td>
+    {% else %}
     <td>
         <span style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;">
             #{{ item.id }}
@@ -355,6 +413,7 @@
             </a>
             {% endif %}
         </td>
+    {% endif %}
     {% endif %}
 </tr>
 {% endfor %}

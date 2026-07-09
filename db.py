@@ -465,6 +465,54 @@ def init_db():
             registrado_por_identificacion TEXT,
             perfil_registrador TEXT,
             firma_registrador TEXT,
+            fecha_registro TEXT,
+            datos_json TEXT,
+            finalizado INTEGER DEFAULT 1
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS calif_atencion (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            fecha TEXT NOT NULL,
+            hora TEXT,
+            primer_nombre TEXT,
+            primer_apellido TEXT,
+            tipo_documento TEXT,
+            identificacion TEXT,
+            datos_json TEXT,
+            registrado_por TEXT,
+            registrado_por_identificacion TEXT,
+            perfil_registrador TEXT,
+            firma_registrador TEXT,
+            firma_paciente TEXT,
+            responsable_nombre TEXT,
+            responsable_apellido TEXT,
+            responsable_tipo_doc TEXT,
+            responsable_identificacion TEXT,
+            finalizado INTEGER DEFAULT 1,
+            fecha_registro TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS segur_paciente (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            fecha TEXT NOT NULL,
+            hora TEXT,
+            primer_nombre TEXT,
+            primer_apellido TEXT,
+            tipo_documento TEXT,
+            identificacion TEXT,
+            datos_json TEXT,
+            registrado_por TEXT,
+            registrado_por_identificacion TEXT,
+            perfil_registrador TEXT,
+            firma_registrador TEXT,
+            firma_paciente TEXT,
+            responsable_nombre TEXT,
+            responsable_apellido TEXT,
+            responsable_tipo_doc TEXT,
+            responsable_identificacion TEXT,
+            finalizado INTEGER DEFAULT 1,
             fecha_registro TEXT
         )
     """)
@@ -482,6 +530,20 @@ def init_db():
             firma_registrador TEXT,
             fecha_registro TEXT,
             datos_json TEXT
+        )
+    """)
+    
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS archivador (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            nombre_formulario VARCHAR(255) NOT NULL,
+            consecutivo INTEGER NOT NULL,
+            archivo_url TEXT,
+            archivo_nombre TEXT,
+            fecha_registro TEXT,
+            registrado_por TEXT,
+            registrado_por_identificacion TEXT,
+            perfil_registrador TEXT
         )
     """)
     

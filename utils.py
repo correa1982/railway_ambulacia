@@ -103,3 +103,49 @@ def send_recovery_email(to_email, temp_password):
     except Exception as e:
         print("Error sending email:", e)
         return False
+
+def get_archivador_as_items(conn, form_label, date_filter=None, user_ident=None, is_admin=False):
+    """
+    Fetches records from the 'archivador' table for a specific form_label
+    and formats them to be compatible with standard list templates.
+    """
+    conds = ["nombre_formulario = ?"]
+    params = [form_label]
+    
+    if date_filter:
+        conds.append("fecha_registro LIKE ?")
+        params.append(f"{date_filter}%")
+        
+
+    if not is_admin and user_ident:
+        conds.append("registrado_por_identificacion = ?")
+        params.append(user_ident)
+        
+    where = " AND ".join(conds)
+    
+    try:
+        rows = conn.execute(f"SELECT * FROM archivador WHERE {where} ORDER BY id DESC", tuple(params)).fetchall()
+    except Exception:
+        return []
+        
+    mapped = []
+    for r in rows:
+        d = dict(r)
+        d["is_archivador"] = True
+        d["finalizado"] = 1
+        d["id"] = d["consecutivo"]
+        
+        # Parse date and time from fecha_registro
+        if d.get("fecha_registro"):
+            parts = d["fecha_registro"].split()
+            d["fecha"] = parts[0]
+            d["hora"] = parts[1] if len(parts) > 1 else ""
+            d["fecha_inicio"] = parts[0]
+        else:
+            d["fecha"] = ""
+            d["hora"] = ""
+            d["fecha_inicio"] = ""
+            
+        mapped.append(d)
+        
+    return mapped

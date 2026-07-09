@@ -401,6 +401,55 @@ def register_routes(app, serializer):
                     "complete_url": complete_url,
                 })
 
+            # Fetch matching records from archivador
+            try:
+                arch_conds = ["nombre_formulario = ?"]
+                arch_params = [cfg["label"]]
+                if fecha_desde:
+                    arch_conds.append(f"fecha_registro >= ?")
+                    arch_params.append(fecha_desde + " 00:00:00")
+                if fecha_hasta:
+                    arch_conds.append(f"fecha_registro <= ?")
+                    arch_params.append(fecha_hasta + " 23:59:59")
+                if not is_admin and table != "atencion_colectiva":
+                    arch_conds.append("registrado_por_identificacion = ?")
+                    arch_params.append(user_ident)
+                if search_query:
+                    arch_conds.append("(archivo_nombre LIKE ? OR registrado_por LIKE ?)")
+                    arch_params.extend([f"%{search_query}%", f"%{search_query}%"])
+                    
+                arch_where = " AND ".join(arch_conds)
+                arch_rows = conn.execute(
+                    f"SELECT * FROM archivador WHERE {arch_where} ORDER BY fecha_registro DESC LIMIT 200",
+                    tuple(arch_params)
+                ).fetchall()
+            except Exception:
+                arch_rows = []
+                
+            for row in arch_rows:
+                r = dict(row)
+                view_url = r["archivo_url"]
+                fecha_part = r.get("fecha_registro", "").split()[0] if r.get("fecha_registro") else "—"
+                hora_part = r.get("fecha_registro", "").split()[1] if r.get("fecha_registro") and len(r.get("fecha_registro").split())>1 else ""
+                
+                results.append({
+                    "tipo_key":   tipo_key,
+                    "tipo_label": cfg["label"],
+                    "tipo_icon":  "📂",
+                    "tipo_color": cfg["color"],
+                    "id":         r.get("id"),
+                    "fecha":      fecha_part,
+                    "hora":       hora_part,
+                    "fecha_registro": r.get("fecha_registro", ""),
+                    "registrado_por": r.get("registrado_por", "—"),
+                    "perfil_registrador": r.get("perfil_registrador", ""),
+                    "summary":    f"Documento: {r.get('archivo_nombre')}",
+                    "view_url":   view_url,
+                    "finalizado": 1,
+                    "complete_url": None,
+                    "is_archivador": True
+                })
+
         conn.close()
 
         # Sort all results by fecha_registro descending
