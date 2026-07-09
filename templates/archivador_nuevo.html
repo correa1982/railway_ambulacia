@@ -264,28 +264,27 @@
         <legend>Información del Documento</legend>
         <div class="form-grid">
           <div class="full-width">
-            <label for="nombre_formulario_select">Nombre o Tipo del Formulario</label>
-            <select id="nombre_formulario_select" name="nombre_formulario_select" onchange="toggleOtro()" {% if not archivo %}required{% endif %}>
-              <option value="" disabled selected>-- Selecciona un formulario --</option>
-              {% for frm in nombres_formulario %}
-                <option value="{{ frm }}" {% if archivo and archivo.nombre_formulario == frm %}selected{% endif %}>{{ frm }}</option>
-              {% endfor %}
-              <option value="Otro" {% if archivo and archivo.nombre_formulario not in nombres_formulario %}selected{% endif %}>Otro (Escribir nombre)</option>
-            </select>
-          </div>
-          <div id="otro_nombre_div" style="display: {% if archivo and archivo.nombre_formulario not in nombres_formulario %}block{% else %}none{% endif %};" class="full-width">
-            <label for="nombre_formulario_otro">Escribe el nombre del formulario</label>
-            <input type="text" id="nombre_formulario_otro" name="nombre_formulario_otro" placeholder="Ej: Consentimiento Informado" value="{% if archivo and archivo.nombre_formulario not in nombres_formulario %}{{ archivo.nombre_formulario }}{% endif %}">
-          </div>
-
-          <div>
             <label for="categoria">Categoría</label>
-            <select id="categoria" name="categoria">
+            <select id="categoria" name="categoria" onchange="filtrarFormularios()">
               <option value="">-- Sin categoría --</option>
               {% for cat in categorias %}
                 <option value="{{ cat }}" {% if archivo and archivo.categoria == cat %}selected{% endif %}>{{ cat }}</option>
               {% endfor %}
             </select>
+          </div>
+          <div class="full-width">
+            <label for="nombre_formulario_select">Nombre o Tipo del Formulario</label>
+            <select id="nombre_formulario_select" name="nombre_formulario_select" onchange="toggleOtro()" {% if not archivo %}required{% endif %}>
+              <option value="" disabled selected>-- Primero selecciona una categoría --</option>
+              {% for frm in formularios_con_categoria %}
+                <option value="{{ frm.nombre }}" data-categoria="{{ frm.categoria_nombre or '' }}" {% if archivo and archivo.nombre_formulario == frm.nombre %}selected{% endif %}>{{ frm.nombre }}</option>
+              {% endfor %}
+              <option value="Otro" data-categoria="" {% if archivo and archivo.nombre_formulario not in nombres_formulario %}selected{% endif %}>Otro (Escribir nombre)</option>
+            </select>
+          </div>
+          <div id="otro_nombre_div" style="display: {% if archivo and archivo.nombre_formulario not in nombres_formulario %}block{% else %}none{% endif %};" class="full-width">
+            <label for="nombre_formulario_otro">Escribe el nombre del formulario</label>
+            <input type="text" id="nombre_formulario_otro" name="nombre_formulario_otro" placeholder="Ej: Consentimiento Informado" value="{% if archivo and archivo.nombre_formulario not in nombres_formulario %}{{ archivo.nombre_formulario }}{% endif %}">
           </div>
 
           <div class="date-field" onclick="document.getElementById('fecha_documento').showPicker ? document.getElementById('fecha_documento').showPicker() : document.getElementById('fecha_documento').click();" style="cursor:pointer;">
@@ -335,6 +334,35 @@
 </div>
 
 <script>
+function filtrarFormularios() {
+  var cat = document.getElementById("categoria").value;
+  var select = document.getElementById("nombre_formulario_select");
+  var optAnterior = select.value;
+  select.innerHTML = "";
+  var emptyOpt = document.createElement("option");
+  emptyOpt.value = "";
+  emptyOpt.disabled = true;
+  emptyOpt.selected = true;
+  emptyOpt.textContent = cat ? "-- Selecciona un formulario --" : "-- Primero selecciona una categoría --";
+  select.appendChild(emptyOpt);
+  {% for frm in formularios_con_categoria %}
+    if (cat === "" || cat === "{{ (frm.categoria_nombre or '')|safe }}") {
+      var opt = document.createElement("option");
+      opt.value = "{{ frm.nombre|safe }}";
+      opt.textContent = "{{ frm.nombre|safe }}";
+      opt.setAttribute("data-categoria", "{{ (frm.categoria_nombre or '')|safe }}");
+      if (optAnterior === "{{ frm.nombre|safe }}") opt.selected = true;
+      select.appendChild(opt);
+    }
+  {% endfor %}
+  var otroOpt = document.createElement("option");
+  otroOpt.value = "Otro";
+  otroOpt.textContent = "Otro (Escribir nombre)";
+  if (optAnterior === "Otro") otroOpt.selected = true;
+  select.appendChild(otroOpt);
+  toggleOtro();
+}
+
 function toggleOtro() {
   var select = document.getElementById("nombre_formulario_select");
   var div = document.getElementById("otro_nombre_div");
@@ -588,6 +616,14 @@ document.getElementById("archivador-form").addEventListener("submit", function(e
     btn.innerHTML = "☁ Subir (" + allFiles.length + ")";
     alert("Error de conexión. Intenta de nuevo.");
   });
+});
+
+// On page load, filter form names if editing
+document.addEventListener("DOMContentLoaded", function() {
+  var cat = document.getElementById("categoria");
+  if (cat && cat.value) {
+    filtrarFormularios();
+  }
 });
 </script>
 {% endblock %}

@@ -1184,6 +1184,16 @@ def init_db():
             except Exception:
                 pass
 
+    # Dynamic migration: add categoria_id to archivador_formularios
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DESCRIBE archivador_formularios")
+        af_cols = [row["Field"] for row in cursor.fetchall()]
+        if "categoria_id" not in af_cols:
+            conn.execute("ALTER TABLE archivador_formularios ADD COLUMN categoria_id INTEGER DEFAULT NULL")
+    except Exception as e:
+        print("Error al migrar archivador_formularios:", e)
+
     # ── Additional indexes for query performance ──
     cursor.execute("SHOW INDEX FROM preoperacional")
     preop_idx = [row["Key_name"] for row in cursor.fetchall()]

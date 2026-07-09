@@ -279,12 +279,13 @@ def register_routes(app):
 
         # When showing archivador tab
         if tipo == "archivador":
-            from routes.routes_archivador import get_formularios, get_categorias
+            from routes.routes_archivador import get_categorias, get_formularios_por_categoria
             categorias_arch = get_categorias(conn)
-            formularios = get_formularios(conn)
+            formularios_por_cat = get_formularios_por_categoria(conn)
             conn.close()
             return render_template("admin_checklists.html", items=[], categorias=[], tipo=tipo,
-                                   archivador_categorias=categorias_arch, archivador_formularios=formularios,
+                                   archivador_categorias=categorias_arch,
+                                   archivador_formularios_por_cat=formularios_por_cat,
                                    usuario=session["usuario"])
 
         items = conn.execute(

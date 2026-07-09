@@ -17,9 +17,35 @@ def get_nombres_formulario(conn):
     rows = conn.execute("SELECT nombre FROM archivador_formularios WHERE activo = 1 ORDER BY nombre ASC").fetchall()
     return [r["nombre"] for r in rows]
 
-def get_formularios(conn):
-    rows = conn.execute("SELECT * FROM archivador_formularios ORDER BY activo DESC, nombre ASC").fetchall()
+def get_formularios_con_categoria(conn):
+    rows = conn.execute("""
+        SELECT af.nombre, af.categoria_id, ac.nombre as categoria_nombre
+        FROM archivador_formularios af
+        LEFT JOIN archivador_categorias ac ON af.categoria_id = ac.id
+        WHERE af.activo = 1
+        ORDER BY af.nombre ASC
+    """).fetchall()
     return rows
+
+def get_formularios(conn):
+    rows = conn.execute("""
+        SELECT af.*, ac.nombre as categoria_nombre
+        FROM archivador_formularios af
+        LEFT JOIN archivador_categorias ac ON af.categoria_id = ac.id
+        ORDER BY af.activo DESC, af.nombre ASC
+    """).fetchall()
+    return rows
+
+def get_formularios_por_categoria(conn):
+    """Return dict mapping categoria_nombre -> list of formularios, plus uncategorized."""
+    formularios = get_formularios(conn)
+    result = {}
+    for f in formularios:
+        cat = f["categoria_nombre"] or "Sin categoría"
+        if cat not in result:
+            result[cat] = []
+        result[cat].append(f)
+    return result
 
 def register_routes(app):
     @app.route("/archivador")
@@ -154,12 +180,14 @@ def register_routes(app):
             return redirect(url_for("archivador_list"))
 
         nombres_formulario = get_nombres_formulario(conn)
+        formularios_con_categoria = get_formularios_con_categoria(conn)
         categorias = get_categoria_nombres(conn)
         conn.close()
 
         return render_template(
             "archivador_nuevo.html",
             nombres_formulario=nombres_formulario,
+            formularios_con_categoria=formularios_con_categoria,
             categorias=categorias,
             archivo=None
         )
@@ -232,12 +260,14 @@ def register_routes(app):
             return redirect(url_for("archivador_list"))
 
         nombres_formulario = get_nombres_formulario(conn)
+        formularios_con_categoria = get_formularios_con_categoria(conn)
         categorias = get_categoria_nombres(conn)
         conn.close()
 
         return render_template(
             "archivador_nuevo.html",
             nombres_formulario=nombres_formulario,
+            formularios_con_categoria=formularios_con_categoria,
             categorias=categorias,
             archivo=archivo
         )
@@ -341,13 +371,15 @@ def register_routes(app):
     @login_required
     def archivador_formulario_agregar():
         nombre = request.form.get("nombre", "").strip()
+        categoria_id = request.form.get("categoria_id", "").strip()
         if not nombre:
             flash("El nombre del formulario es obligatorio.", "error")
             return redirect(url_for("admin_checklists", tipo="archivador"))
 
+        categoria_id = int(categoria_id) if categoria_id else None
         conn = get_db()
         try:
-            conn.execute("INSERT INTO archivador_formularios (nombre, activo) VALUES (?, 1)", (nombre,))
+            conn.execute("INSERT INTO archivador_formularios (nombre, activo, categoria_id) VALUES (?, 1, ?)", (nombre, categoria_id))
             conn.commit()
             flash(f"Formulario '{nombre}' agregado con éxito.", "success")
         except Exception as e:
@@ -362,10 +394,12 @@ def register_routes(app):
     @login_required
     def archivador_formulario_editar(id):
         nuevo_nombre = request.form.get("nombre", "").strip()
+        categoria_id = request.form.get("categoria_id", "").strip()
         if not nuevo_nombre:
             flash("El nombre del formulario es obligatorio.", "error")
             return redirect(url_for("admin_checklists", tipo="archivador"))
 
+        categoria_id = int(categoria_id) if categoria_id else None
         conn = get_db()
         frm = conn.execute("SELECT * FROM archivador_formularios WHERE id = ?", (id,)).fetchone()
         if not frm:
@@ -375,9 +409,9 @@ def register_routes(app):
 
         old_nombre = frm["nombre"]
         try:
-            conn.execute("UPDATE archivador_formularios SET nombre = ? WHERE id = ?", (nuevo_nombre, id))
+            conn.execute("UPDATE archivador_formularios SET nombre = ?, categoria_id = ? WHERE id = ?", (nuevo_nombre, categoria_id, id))
             conn.commit()
-            flash(f"Formulario '{old_nombre}' renombrado a '{nuevo_nombre}'.", "success")
+            flash(f"Formulario '{old_nombre}' actualizado.", "success")
         except Exception as e:
             if "Duplicate" in str(e) or "UNIQUE" in str(e):
                 flash(f"Ya existe un formulario con el nombre '{nuevo_nombre}'.", "error")
