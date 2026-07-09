@@ -16,7 +16,7 @@ def register_routes(app):
         where = "1=1"
         params = []
         if search_query:
-            where = "(nombre_formulario LIKE %s OR archivo_nombre LIKE %s)"
+            where = "(nombre_formulario LIKE ? OR archivo_nombre LIKE ?)"
             params = [f"%{search_query}%", f"%{search_query}%"]
             
         archivos = conn.execute(f"SELECT * FROM archivador WHERE {where} ORDER BY id DESC", params).fetchall()
@@ -28,7 +28,12 @@ def register_routes(app):
     def archivador_nuevo():
         conn = get_db()
         if request.method == "POST":
-            nombre_formulario = request.form.get("nombre_formulario", "").strip()
+            nombre_formulario_select = request.form.get("nombre_formulario_select", "").strip()
+            if nombre_formulario_select == "Otro":
+                nombre_formulario = request.form.get("nombre_formulario_otro", "").strip()
+            else:
+                nombre_formulario = nombre_formulario_select
+                
             file = request.files.get("archivo")
             
             if not nombre_formulario or not file or file.filename == "":
@@ -38,7 +43,7 @@ def register_routes(app):
             # Calculate consecutivo
             try:
                 max_consecutivo_row = conn.execute(
-                    "SELECT MAX(consecutivo) as max_c FROM archivador WHERE nombre_formulario = %s",
+                    "SELECT MAX(consecutivo) as max_c FROM archivador WHERE nombre_formulario = ?",
                     (nombre_formulario,)
                 ).fetchone()
                 max_archivador = max_consecutivo_row["max_c"] or 0
@@ -104,7 +109,7 @@ def register_routes(app):
                 INSERT INTO archivador (
                     nombre_formulario, consecutivo, archivo_url, archivo_nombre,
                     fecha_registro, registrado_por, registrado_por_identificacion, perfil_registrador
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 nombre_formulario,
                 current_consecutivo,
@@ -153,7 +158,7 @@ def register_routes(app):
     @login_required
     def archivador_eliminar(id):
         conn = get_db()
-        archivo = conn.execute("SELECT * FROM archivador WHERE id = %s", (id,)).fetchone()
+        archivo = conn.execute("SELECT * FROM archivador WHERE id = ?", (id,)).fetchone()
         if not archivo:
             flash("Archivo no encontrado.", "error")
             return redirect(url_for("archivador_list"))
@@ -162,7 +167,7 @@ def register_routes(app):
         if os.path.exists(file_path):
             os.remove(file_path)
             
-        conn.execute("DELETE FROM archivador WHERE id = %s", (id,))
+        conn.execute("DELETE FROM archivador WHERE id = ?", (id,))
         conn.commit()
         conn.close()
         

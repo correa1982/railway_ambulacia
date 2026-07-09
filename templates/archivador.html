@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size: 28px; line-height: 1;">📁</span>
+        <h2 style="color: #1e3a8a; font-weight: 800; font-size: 22px; margin: 0; letter-spacing: -0.5px;">Archivador de Documentos</h2>
+    </div>
+    
+    <div style="display:flex; align-items:center; gap:16px;">
+        <form method="GET" action="{{ url_for('archivador_list') }}" style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:6px 12px; border-radius:12px; border:1px solid #e2e8f0; margin: 0;">
+            <div style="display:flex; align-items:center; gap:6px; background:white; border:1px solid #cbd5e1; border-radius:8px; padding:4px 10px; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
+                <i class="ph ph-magnifying-glass" style="color:#64748b; font-size: 16px;"></i>
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Buscar formulario o archivo..." style="border:none; padding:2px; font-size:13px; outline:none; width:200px; box-shadow:none; margin:0; background:transparent;" autofocus>
+            </div>
+            <button type="submit" style="background:#2563eb; color:white; border:none; padding:7px 16px; font-size:13px; font-weight:600; border-radius:8px; margin:0; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                Buscar
+            </button>
+        </form>
+        <a href="{{ url_for('archivador_nuevo') }}" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; white-space: nowrap; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2);" onmouseover="this.style.background='#059669'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#10b981'; this.style.transform='none'">
+            + Subir Documento
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 text-center align-middle">
+                <thead class="table-primary text-primary">
+                    <tr>
+                        <th style="background:#eff6ff; color:#1e3a8a; font-size:12px; font-weight:700; border-bottom: 2px solid #bfdbfe;">#</th>
+                        <th style="background:#eff6ff; color:#1e3a8a; font-size:12px; font-weight:700; border-bottom: 2px solid #bfdbfe;">NOMBRE DEL FORMULARIO</th>
+                        <th style="background:#eff6ff; color:#1e3a8a; font-size:12px; font-weight:700; border-bottom: 2px solid #bfdbfe;">CONSECUTIVO</th>
+                        <th style="background:#eff6ff; color:#1e3a8a; font-size:12px; font-weight:700; border-bottom: 2px solid #bfdbfe;">ARCHIVO</th>
+                        <th style="background:#eff6ff; color:#1e3a8a; font-size:12px; font-weight:700; border-bottom: 2px solid #bfdbfe;">SUBIDO POR</th>
+                        <th style="background:#eff6ff; color:#1e3a8a; font-size:12px; font-weight:700; border-bottom: 2px solid #bfdbfe;">FECHA REGISTRO</th>
+                        <th style="background:#eff6ff; color:#1e3a8a; font-size:12px; font-weight:700; text-align: center; border-bottom: 2px solid #bfdbfe;">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for archivo in archivos %}
+                    <tr>
+                        <td><span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700;">#{{ archivo.id }}</span></td>
+                        <td><strong style="font-size: 13px;">{{ archivo.nombre_formulario }}</strong></td>
+                        <td><span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700;">#{{ archivo.consecutivo }}</span></td>
+                        <td style="font-size: 12px; color: #475569;">{{ archivo.archivo_nombre }}</td>
+                        <td style="font-size: 12px;">
+                            <strong>{{ archivo.registrado_por }}</strong>
+                            <span style="display:block; font-size:10px; color:#64748b; margin-top:1px;">{{ archivo.perfil_registrador }}</span>
+                        </td>
+                        <td style="font-size: 11px; color: #64748b; white-space: nowrap;">{{ archivo.fecha_registro }}</td>
+                        <td style="text-align: center; white-space: nowrap;">
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 6px;">
+                                <a href="{{ archivo.archivo_url }}" target="_blank"
+                                    style="background: #2563eb; color: white; padding: 6px 14px;
+                                    border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600;
+                                    display: inline-flex; align-items: center; gap: 6px;
+                                    box-shadow: 0 2px 4px rgba(37,99,235,0.2); transition: all 0.2s;"
+                                    onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(37,99,235,0.3)'"
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(37,99,235,0.2)'">
+                                    <i class="ph ph-eye"></i> Ver
+                                </a>
+                                <a href="{{ archivo.archivo_url }}" download
+                                    style="background: #0ea5e9; color: white; padding: 6px 14px;
+                                    border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600;
+                                    display: inline-flex; align-items: center; gap: 6px;
+                                    box-shadow: 0 2px 4px rgba(14,165,233,0.2); transition: all 0.2s;"
+                                    onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(14,165,233,0.3)'"
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(14,165,233,0.2)'">
+                                    <i class="ph ph-download-simple"></i> Descargar
+                                </a>
+                                <form action="{{ url_for('archivador_eliminar', id=archivo.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de eliminar este archivo?');">
+                                    <button type="submit" 
+                                        style="background: #ef4444; color: white; border: none; padding: 6px 14px;
+                                        border-radius: 8px; font-size: 12px; font-weight: 600;
+                                        display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+                                        box-shadow: 0 2px 4px rgba(239,68,68,0.2); transition: all 0.2s;"
+                                        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(239,68,68,0.3)'"
+                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(239,68,68,0.2)'">
+                                        <i class="ph ph-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <h5 class="mb-0">No hay documentos en el archivador.</h5>
+                            <p class="mb-0 mt-2">Sube el primero haciendo clic en "Subir Documento".</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

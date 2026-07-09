@@ -340,6 +340,12 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="card-title">Explorador de Registros</div>
         <div class="card-desc">Consultar todos los informes: HC, eventos, checklists y preoperacionales. Filtra por tipo y rango de fechas.</div>
     </a>
+    
+    <a href="{{ url_for('archivador_list') }}" class="dash-card" style="border-color: #e2e8f0;">
+        <div class="card-icon" style="background: #e0e7ff;"><i class="ph ph-archive" style="color: #4338ca;"></i></div>
+        <div class="card-title">Archivador de Documentos</div>
+        <div class="card-desc">Subir y consultar documentos escaneados o digitales anexos al sistema.</div>
+    </a>
     <a href="{{ url_for('estadisticas') }}" class="dash-card" style="border-color: #e2e8f0; background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
         <div class="card-icon" style="background: #dbeafe;"><i class="ph ph-chart-line-up" style="color: #2563eb;"></i></div>
         <div class="card-title">Estadísticas Globales</div>
