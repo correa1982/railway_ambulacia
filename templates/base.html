@@ -870,5 +870,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 })();
 </script>
+<script>
+// Validaciones globales para inputs de integrantes
+document.addEventListener('input', function(e) {
+    if (!e.target || e.target.tagName.toLowerCase() !== 'input') return;
+    
+    // Solo letras y espacios para el nombre
+    if (e.target.name === 'integrante_nombre[]' || e.target.classList.contains('integrante-nombre') || e.target.classList.contains('input-nombre')) {
+        e.target.value = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, '');
+    }
+    
+    // Solo números para el documento
+    if (e.target.name === 'integrante_doc[]' || e.target.classList.contains('integrante-doc') || e.target.classList.contains('input-doc')) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    }
+});
+</script>
 </body>
 </html>
