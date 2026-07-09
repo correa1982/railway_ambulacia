@@ -192,6 +192,19 @@ def init_db():
         )
     """)
     conn.execute("""
+        CREATE TABLE IF NOT EXISTS archivador (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            nombre_formulario VARCHAR(255) NOT NULL,
+            consecutivo INTEGER NOT NULL,
+            archivo_url TEXT NOT NULL,
+            archivo_nombre TEXT NOT NULL,
+            fecha_registro TEXT NOT NULL,
+            registrado_por TEXT NOT NULL,
+            registrado_por_identificacion TEXT NOT NULL,
+            perfil_registrador TEXT
+        )
+    """)
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS pacientes (
             id INTEGER PRIMARY KEY AUTO_INCREMENT,
             identificacion_paciente TEXT NOT NULL,
