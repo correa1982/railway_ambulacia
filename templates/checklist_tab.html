@@ -22,6 +22,22 @@
 .ri-na input:checked + label { background: #94a3b8; color: white; border-color: #64748b; }
 .empty-msg { text-align: center; padding: 30px; color: #94a3b8; font-size: 14px; }
 
+/* ── Acordeón (native details/summary) ─────────────────── */
+.accordion-step { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(30,111,191,0.06); transition: box-shadow 0.2s; }
+.accordion-step[open] { box-shadow: 0 4px 16px rgba(30,111,191,0.12); border-color: #bfdbfe; }
+.accordion-step > summary { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; cursor: pointer; background: linear-gradient(135deg, #f0f7ff, #eff6ff); user-select: none; list-style: none; border-radius: 10px; transition: background 0.15s; gap: 12px; font-weight: 700; font-size: 14px; color: #1e3a5f; }
+.accordion-step > summary::-webkit-details-marker { display: none; }
+.accordion-step > summary:hover { background: linear-gradient(135deg, #dbeafe, #eff6ff); }
+.accordion-step > summary:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
+.accordion-step[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 1px solid #e2e8f0; background: linear-gradient(135deg, #dbeafe, #eff6ff); }
+.accordion-step > summary::after { content: "▼"; width: 24px; height: 24px; border-radius: 50%; background: white; border: 1.5px solid #bfdbfe; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #2563eb; font-size: 12px; transition: transform 0.25s, background 0.2s, color 0.2s; line-height: 24px; text-align: center; }
+.accordion-step[open] > summary::after { transform: rotate(180deg); background: #2563eb; color: white; border-color: #2563eb; }
+.summary-left { display: flex; align-items: center; gap: 10px; }
+.accordion-badge { font-size: 11px; font-weight: 700; background: #e0f2fe; color: #0369a1; border-radius: 20px; padding: 2px 10px; white-space: nowrap; }
+.accordion-badge.complete { background: #d1fae5; color: #065f46; }
+.accordion-badge.partial  { background: #fef3c7; color: #92400e; }
+.accordion-content { padding: 2px; }
+
 @media (max-width: 650px) {
     .check-table thead { display: none; }
     .check-table, .check-table tbody, .check-table tr, .check-table td { display: block; width: 100%; box-sizing: border-box; }
@@ -132,8 +148,17 @@
 {% if checklist_items %}
     {% for cat, items_list in checklist_items.items() %}
     {% set info = cat_labels.get(cat, ('📦 ' + cat|capitalize, 'Ítem', 'Estado')) %}
-    <fieldset>
-    <legend>{{ info[0] }}</legend>
+    {% set cat_total = items_list|length %}
+    <details class="accordion-step" data-categoria="{{ cat }}">
+    <summary>
+        <div class="summary-left">
+            <span>{{ info[0] }}</span>
+            <span class="accordion-badge" id="badge_{{ loop.index }}" data-total="{{ cat_total }}">
+                0 / {{ cat_total }}
+            </span>
+        </div>
+    </summary>
+    <div class="accordion-content">
     <table class="check-table">
     <thead><tr>
         <th style="width:60%;">{{ info[1] }}</th>
@@ -150,15 +175,15 @@
                 <span class="item-name">{{ item.nombre }}{% if item.cantidad is not none %} <span style="font-size: 11px; color: #64748b; font-weight: normal;">(Cant: {{ item.cantidad }})</span>{% endif %}</span>
                 <div class="radio-trio">
                     <div class="ri-si">
-                        <input type="radio" name="{{ field }}" id="tab_{{ field }}_si" value="SI" {% if val_exist == 'SI' %}checked{% endif %}>
+                        <input type="radio" name="{{ field }}" id="tab_{{ field }}_si" value="SI" {% if val_exist == 'SI' %}checked{% endif %} onchange="updateBadge(this)">
                         <label for="tab_{{ field }}_si">Cumple</label>
                     </div>
                     <div class="ri-no">
-                        <input type="radio" name="{{ field }}" id="tab_{{ field }}_no" value="NO" {% if val_exist == 'NO' %}checked{% endif %}>
+                        <input type="radio" name="{{ field }}" id="tab_{{ field }}_no" value="NO" {% if val_exist == 'NO' %}checked{% endif %} onchange="updateBadge(this)">
                         <label for="tab_{{ field }}_no">No Cumple</label>
                     </div>
                     <div class="ri-na">
-                        <input type="radio" name="{{ field }}" id="tab_{{ field }}_na" value="NA" {% if val_exist == 'NA' %}checked{% endif %}>
+                        <input type="radio" name="{{ field }}" id="tab_{{ field }}_na" value="NA" {% if val_exist == 'NA' %}checked{% endif %} onchange="updateBadge(this)">
                         <label for="tab_{{ field }}_na">No Aplica</label>
                     </div>
                 </div>
@@ -172,7 +197,8 @@
     </tr>
     {% endfor %}
     </tbody></table>
-    </fieldset>
+    </div>
+    </details>
     {% endfor %}
 {% else %}
 <div class="empty-msg">
@@ -323,5 +349,99 @@ function removeIntegranteTab(btn) {
 document.querySelectorAll('#tbody-integrantes-tab .integrante-cargo').forEach(function(sel) {
     sel.addEventListener('change', function() { onCargoCambioTab(this); });
 });
+</script>
+
+<script>
+// ── Acordeón (native details/summary) ────────────────
+var acordeonSteps = document.querySelectorAll('.accordion-step');
+acordeonSteps.forEach(function(step) {
+    step.addEventListener('toggle', function() {
+        if (this.open) {
+            acordeonSteps.forEach(function(other) {
+                if (other !== this && other.open) {
+                    other.open = false;
+                }
+            }, this);
+            var header = this.querySelector('summary');
+            if (header) header.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        guardarEstadoAcordeon();
+    });
+});
+
+function guardarEstadoAcordeon() {
+    var idx = -1;
+    acordeonSteps.forEach(function(s, i) { if (s.open) idx = i; });
+    try { localStorage.setItem('acordeon_tab', idx); } catch(e) {}
+}
+
+function restaurarEstadoAcordeon() {
+    if (!acordeonSteps.length) return;
+    try {
+        var idx = localStorage.getItem('acordeon_tab');
+        if (idx !== null) {
+            idx = parseInt(idx, 10);
+            if (!isNaN(idx) && idx >= 0 && idx < acordeonSteps.length) {
+                acordeonSteps[idx].open = true;
+                return;
+            }
+        }
+    } catch(e) {}
+    if (acordeonSteps[0]) acordeonSteps[0].open = true;
+}
+
+// ── Contadores por categoría ──────────────────────────
+function recalcBadges() {
+    document.querySelectorAll('.accordion-step').forEach(function(step, idx) {
+        const badgeId = 'badge_' + (idx + 1);
+        const badge = document.getElementById(badgeId);
+        if (!badge) return;
+        const total = parseInt(badge.dataset.total) || 0;
+        const radioGroups = {};
+        step.querySelectorAll('input[type="radio"]').forEach(function(r) {
+            if (!radioGroups[r.name]) radioGroups[r.name] = false;
+            if (r.checked) radioGroups[r.name] = true;
+        });
+        const answered = Object.values(radioGroups).filter(Boolean).length;
+        badge.textContent = answered + ' / ' + total;
+        badge.className = 'accordion-badge';
+        if (answered === total && total > 0) badge.classList.add('complete');
+        else if (answered > 0) badge.classList.add('partial');
+    });
+}
+
+// ── Mostrar/ocultar obs al elegir NO ─────────────────
+function checkNo() {
+    document.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+        if (radio.checked) {
+            const fieldName = radio.name;
+            const obsRow = document.getElementById('obs_row_' + fieldName);
+            const obsInput = document.getElementById('obs_' + fieldName);
+            if (obsRow && obsInput) {
+                if (radio.value === 'NO') {
+                    obsRow.style.display = 'block';
+                    obsInput.required = true;
+                } else {
+                    obsRow.style.display = 'none';
+                    obsInput.required = false;
+                    obsInput.value = '';
+                }
+            }
+        }
+    });
+}
+
+function updateBadge(radio) {
+    checkNo();
+    recalcBadges();
+}
+
+document.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+    radio.addEventListener('change', updateBadge);
+});
+
+checkNo();
+recalcBadges();
+restaurarEstadoAcordeon();
 </script>
 {% endblock %}
