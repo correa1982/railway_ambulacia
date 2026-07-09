@@ -136,6 +136,12 @@ fieldset legend { font-size: 11px; letter-spacing: 0.5px; }
 </style>
 
 <style>
+/* Dictation Button */
+.btn-dictar { background: #eff6ff; border: 1px solid #bfdbfe; color: #3b82f6; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; padding: 0; }
+.btn-dictar:hover { background: #dbeafe; }
+.btn-dictar.recording { background: #fee2e2; border-color: #fca5a5; color: #ef4444; animation: pulse-record 1.5s infinite; }
+@keyframes pulse-record { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 6px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+
 details.accordion-step {
     background: #fff;
     border: 1px solid #e2e8f0;
@@ -987,11 +993,21 @@ document.getElementById('departamento').addEventListener('input', function() {
         <!-- ── Información Clínica ── -->
         <fieldset>
         <legend>🩺 Información Clínica</legend>
-        <label>Motivo de consulta <span style="color:#ef4444;">*</span></label>
-        <textarea name="motivo_consulta" required placeholder="Describa el motivo de consulta del paciente...">{{ paciente.motivo_consulta or '' }}</textarea>
+        <div style="margin-bottom: 12px; position: relative;">
+            <label style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Motivo de consulta <span style="color:#ef4444;">*</span></span>
+                <button type="button" class="btn-dictar" tabindex="-1" title="Dictar por voz" onclick="startDictation(this, this.parentElement.nextElementSibling)"><i class="ph ph-microphone"></i></button>
+            </label>
+            <textarea name="motivo_consulta" required placeholder="Describa el motivo de consulta del paciente...">{{ paciente.motivo_consulta or '' }}</textarea>
+        </div>
 
-        <label>Enfermedad actual <span style="color:#ef4444;">*</span></label>
-        <textarea name="enfermedad_actual" required placeholder="Relato detallado de la sintomatología...">{{ paciente.enfermedad_actual or '' }}</textarea>
+        <div style="margin-bottom: 12px; position: relative;">
+            <label style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Enfermedad actual <span style="color:#ef4444;">*</span></span>
+                <button type="button" class="btn-dictar" tabindex="-1" title="Dictar por voz" onclick="startDictation(this, this.parentElement.nextElementSibling)"><i class="ph ph-microphone"></i></button>
+            </label>
+            <textarea name="enfermedad_actual" required placeholder="Relato detallado de la sintomatología...">{{ paciente.enfermedad_actual or '' }}</textarea>
+        </div>
 
 
     </div>
@@ -1618,11 +1634,21 @@ document.getElementById('departamento').addEventListener('input', function() {
         <fieldset>
         <legend>&#129504; Analisis Clinico y Plan de Manejo</legend>
 
-        <label>Analisis clinico</label>
-        <textarea name="analisis" id="analisis" rows="4" placeholder="Describa el analisis clinico del paciente...">{{ paciente.analisis or '' if paciente else '' }}</textarea>
+        <div style="margin-bottom: 12px; position: relative;">
+            <label style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Analisis clinico</span>
+                <button type="button" class="btn-dictar" tabindex="-1" title="Dictar por voz" onclick="startDictation(this, this.parentElement.nextElementSibling)"><i class="ph ph-microphone"></i></button>
+            </label>
+            <textarea name="analisis" id="analisis" rows="4" placeholder="Describa el analisis clinico del paciente...">{{ paciente.analisis or '' if paciente else '' }}</textarea>
+        </div>
 
-        <label>Plan de manejo y conducta</label>
-        <textarea name="plan" id="plan" rows="4" placeholder="Describa el plan de manejo y conducta a seguir...">{{ paciente.plan or '' if paciente else '' }}</textarea>
+        <div style="margin-bottom: 12px; position: relative;">
+            <label style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Plan de manejo y conducta</span>
+                <button type="button" class="btn-dictar" tabindex="-1" title="Dictar por voz" onclick="startDictation(this, this.parentElement.nextElementSibling)"><i class="ph ph-microphone"></i></button>
+            </label>
+            <textarea name="plan" id="plan" rows="4" placeholder="Describa el plan de manejo y conducta a seguir...">{{ paciente.plan or '' if paciente else '' }}</textarea>
+        </div>
 
         </fieldset>
 
@@ -3732,4 +3758,50 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script src="{{ url_for('static', filename='formulario.js') }}"></script>
+<script>
+// ── Dictado por Voz ──
+let currentRecognition = null;
+function startDictation(btn, targetTextarea) {
+    if (currentRecognition) {
+        currentRecognition.stop();
+        currentRecognition = null;
+        document.querySelectorAll('.btn-dictar').forEach(b => b.classList.remove('recording'));
+        return;
+    }
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("El dictado por voz no está soportado en este navegador. Intente usar Chrome o Safari.");
+        return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.lang = 'es-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = function() {
+        btn.classList.add('recording');
+        currentRecognition = recognition;
+    };
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        if (targetTextarea.value) {
+            targetTextarea.value += " " + transcript;
+        } else {
+            targetTextarea.value = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+        }
+        targetTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    recognition.onerror = function(event) {
+        if (event.error !== 'no-speech') {
+            alert("Error en el dictado de voz: " + event.error);
+        }
+    };
+    recognition.onend = function() {
+        btn.classList.remove('recording');
+        currentRecognition = null;
+    };
+    recognition.start();
+}
+</script>
 {% endblock %}
