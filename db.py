@@ -1125,6 +1125,20 @@ def init_db():
     except Exception as e:
         print("Error al migrar la tabla checklist_items:", e)
 
+    # Dynamic migration for archivador table
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DESCRIBE archivador")
+        archivador_cols = [row["Field"] for row in cursor.fetchall()]
+        if "categoria" not in archivador_cols:
+            conn.execute("ALTER TABLE archivador ADD COLUMN categoria TEXT")
+        if "descripcion" not in archivador_cols:
+            conn.execute("ALTER TABLE archivador ADD COLUMN descripcion TEXT")
+        if "fecha_documento" not in archivador_cols:
+            conn.execute("ALTER TABLE archivador ADD COLUMN fecha_documento TEXT")
+    except Exception as e:
+        print("Error al migrar la tabla archivador:", e)
+
     # ── Additional indexes for query performance ──
     cursor.execute("SHOW INDEX FROM preoperacional")
     preop_idx = [row["Key_name"] for row in cursor.fetchall()]
