@@ -222,9 +222,9 @@
                   onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
                   ✏️<span class="btn-label"> Editar</span>
                 </a>
-                <form action="{{ url_for('archivador_eliminar', id=archivo.id) }}" method="POST" style="margin: 0; padding: 0; display: inline-flex; align-items: center; height: 26px;" onsubmit="return confirm('¿Estás seguro de eliminar este archivo?');">
+                <form action="{{ url_for('archivador_eliminar', id=archivo.id) }}" method="POST" style="margin: 0; padding: 0; display: flex; height: 26px;" onsubmit="return confirm('¿Estás seguro de eliminar este archivo?');">
                   <button type="submit"
-                    style="box-sizing: border-box; height: 26px; line-height: 26px; background: #ef4444; color: white; border: none; padding: 0 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; box-shadow: 0 2px 4px rgba(239,68,68,0.2); transition: all 0.2s;"
+                    style="margin: 0; font-family: inherit; box-sizing: border-box; height: 26px; line-height: 26px; background: #ef4444; color: white; border: none; padding: 0 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; box-shadow: 0 2px 4px rgba(239,68,68,0.2); transition: all 0.2s;"
                     onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
                     🗑<span class="btn-label"> Eliminar</span>
                   </button>
