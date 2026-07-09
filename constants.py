@@ -61,6 +61,12 @@ PATIENT_FULL_FIELDS = PATIENT_MCI_FIELDS + [
     "cincinnati_total", "rts_total",
     "examen_fisico", "datos_complementarios",
     "soat_aseguradora", "soat_vigencia",
+    "hora_despacho", "hora_arribo", "nombre_evento", "tipo_servicio",
+    "departamento", "municipio", "barrio", "direccion_atencion",
+    "ambito_territorial", "entorno_atencion", "clasificacion",
+    "causa_motiva_atencion", "tipo_traslado", "entorno_otro",
+    "inmovilizacion", "otros_procedimientos", "ventilacion_mecanica",
+    "torniquete", "x_items", "a_items", "b_items", "c_items", "d_items", "e_items"
 ]
 
 EXAMEN_FISICO_KEYS = [

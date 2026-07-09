@@ -202,6 +202,61 @@
         </div>
     </div>
 
+    <!-- Datos del Evento -->
+    <div class="hc-section">
+        <div class="hc-section-title">Datos del Evento</div>
+        <div class="hc-grid-3">
+            <div class="hc-field col-span-2">
+                <span>Nombre del evento</span>
+                <strong>{{ p.nombre_evento or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Tipo de servicio</span>
+                <strong>{{ p.tipo_servicio or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Ubicación</span>
+                <strong>{{ p.municipio or '' }}{% if p.departamento %} - {{ p.departamento }}{% endif %}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Barrio</span>
+                <strong>{{ p.barrio or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Dirección de la atención</span>
+                <strong>{{ p.direccion_atencion or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Hora de despacho</span>
+                <strong>{{ p.hora_despacho or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Hora de arribo a la escena</span>
+                <strong>{{ p.hora_arribo or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Ámbito territorial</span>
+                <strong>{{ p.ambito_territorial or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Entorno de atención</span>
+                <strong>{{ p.entorno_atencion or '—' }}{% if p.entorno_atencion == 'OTRO' and p.entorno_otro %} ({{ p.entorno_otro }}){% endif %}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Clasificación</span>
+                <strong>{{ p.clasificacion or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Causa que Motiva la Atención</span>
+                <strong>{{ p.causa_motiva_atencion or '—' }}</strong>
+            </div>
+            <div class="hc-field">
+                <span>Tipo de traslado</span>
+                <strong>{{ p.tipo_traslado or '—' }}</strong>
+            </div>
+        </div>
+    </div>
+
     <!-- Identificación del Paciente -->
     <div class="hc-section">
         <div class="hc-section-title">Identificación del Paciente</div>
@@ -277,11 +332,9 @@
     </div>
 
     <!-- Acompañante y Responsable -->
-    {% if p.aplica_acompanante == 'SI' or p.aplica_responsable == 'SI' %}
     <div class="hc-section">
         <div class="hc-section-title">Acompañante / Responsable</div>
         
-        {% if p.aplica_acompanante == 'SI' %}
         <div style="background: #fafbfc; border: 1.5px solid #edf2f7; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;">
             <span style="font-size: 11px; font-weight: 700; color: #4a5568; text-transform: uppercase; display: block; margin-bottom: 8px;">👨‍👩‍👧‍👦 Acompañante</span>
             <div class="hc-grid-3">
@@ -299,9 +352,7 @@
                 </div>
             </div>
         </div>
-        {% endif %}
 
-        {% if p.aplica_responsable == 'SI' %}
         <div style="background: #fafbfc; border: 1.5px solid #edf2f7; border-radius: 8px; padding: 12px 16px;">
             <span style="font-size: 11px; font-weight: 700; color: #4a5568; text-transform: uppercase; display: block; margin-bottom: 8px;">👤 Responsable</span>
             <div class="hc-grid-3">
@@ -319,9 +370,7 @@
                 </div>
             </div>
         </div>
-        {% endif %}
     </div>
-    {% endif %}
 
     <!-- Seguridad Social -->
     <div class="hc-section">
@@ -335,7 +384,6 @@
                 <span>Aseguradora (EPS)</span>
                 <strong>{{ p.aseguradora }}</strong>
             </div>
-            {% if p.soat_aseguradora %}
             <div class="hc-field" style="margin-top: 10px;">
                 <span style="color: #166534;">Póliza de SOAT</span>
                 <strong style="color: #166534;">{{ p.soat_aseguradora }}</strong>
@@ -344,7 +392,6 @@
                 <span style="color: #166534;">Vigencia del SOAT</span>
                 <strong style="color: #166534;">{{ p.soat_vigencia or 'No registrada' }}</strong>
             </div>
-            {% endif %}
         </div>
     </div>
 
@@ -468,7 +515,6 @@
     </div>
 
     <!-- Triage Hospitalario -->
-    {% if p.triage_fecha_hora or p.triage_clasificacion %}
     <div class="hc-section">
         <div class="hc-section-title">Triage Hospitalario</div>
         <div class="hc-grid-2">
@@ -495,10 +541,8 @@
             </div>
         </div>
     </div>
-    {% endif %}
 
     <!-- Escala de Glasgow -->
-    {% if p.glasgow_ocular or p.glasgow_verbal or p.glasgow_motora %}
     <div class="hc-section">
         <div class="hc-section-title">Escala de Coma de Glasgow</div>
         <div style="display:flex; align-items:stretch; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
@@ -541,10 +585,8 @@
             {% endif %}
         </div>
     </div>
-    {% endif %}
 
     <!-- Estado de Consciencia (AVDI) -->
-    {% if p.estado_consciencia %}
     <div class="hc-section">
         <div class="hc-section-title">Valoración de Consciencia (AVDI)</div>
         <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px 16px; display:inline-flex; align-items:center; gap:8px;">
@@ -555,10 +597,8 @@
             </span>
         </div>
     </div>
-    {% endif %}
 
     <!-- Escala de Cincinnati (ACV) -->
-    {% if p.cincinnati_facial or p.cincinnati_brazo or p.cincinnati_habla %}
     <div class="hc-section">
         <div class="hc-section-title">Escala de Cincinnati (Sospecha de ACV)</div>
         <div style="display:flex; align-items:stretch; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
@@ -601,10 +641,8 @@
             {% endif %}
         </div>
     </div>
-    {% endif %}
 
     <!-- Escala RTS -->
-    {% if p.rts_total %}
     <div class="hc-section">
         <div class="hc-section-title">Escala RTS (Revised Trauma Score)</div>
         <div style="background:#f0fdfa; border:1.5px solid #99f6e4; border-radius:10px; padding:16px; display:flex; flex-direction:column; gap:8px;">
@@ -621,7 +659,7 @@
                 
                 <!-- Badge for survival probability -->
                 {% set rts_triage_val = -1 %}
-                {% if 'Triage: ' in p.rts_total %}
+                {% if p.rts_total and 'Triage: ' in p.rts_total %}
                     {% set parts_rts = p.rts_total.split('/') %}
                     {% if parts_rts | length > 0 %}
                         {% set rts_triage_val = parts_rts[0].replace('Triage: ', '').split('/')[0] | int(-1) %}
@@ -653,7 +691,6 @@
             </div>
         </div>
     </div>
-    {% endif %}
 
     <!-- Examen Físico -->
     {% set ef_items = [
@@ -665,15 +702,13 @@
         ('neurologico', 'Neurológico'), ('estado_mental', 'Estado mental')
     ] %}
     {% set ef_obj = p.examen_fisico_obj if p and p.examen_fisico_obj else {} %}
-    {% if ef_obj and ef_obj.values() | reject("==", "") | list | length > 0 %}
     <div class="hc-section">
         <div class="hc-section-title">Examen Físico</div>
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px;">
             {% for key, label in ef_items %}
-                {% set ef_val = ef_obj.get(key) %}
-                {% if ef_val %}
+                {% set ef_val = ef_obj.get(key) or {} %}
                 {% set is_dict = (ef_val is mapping) %}
-                {% set estado = ef_val.get('estado') if is_dict else ef_val %}
+                {% set estado = (ef_val.get('estado') if is_dict else ef_val) or 'No evaluado' %}
                 {% set obs = ef_val.get('obs') if is_dict else '' %}
                 <div style="display:flex; flex-direction:column; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                     <div style="display:flex; justify-content:space-between;">
@@ -686,11 +721,66 @@
                     </div>
                     {% endif %}
                 </div>
-                {% endif %}
             {% endfor %}
         </div>
     </div>
-    {% endif %}
+
+    <!-- Intervenciones y Procedimientos -->
+    <div class="hc-section">
+        <div class="hc-section-title">Intervenciones y Procedimientos</div>
+        
+        <div style="background: #fafbfc; border: 1.5px solid #edf2f7; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;">
+            <span style="font-size: 13px; font-weight: 700; color: #4a5568; display: block; margin-bottom: 8px;">Inmovilización y Otros Procedimientos</span>
+            <div class="hc-grid-2">
+                <div class="hc-field">
+                    <span>Inmovilización</span>
+                    <strong>{{ p.inmovilizacion or '—' }}</strong>
+                </div>
+                <div class="hc-field">
+                    <span>Otros Procedimientos</span>
+                    <strong>{{ p.otros_procedimientos or '—' }}</strong>
+                </div>
+                <div class="hc-field">
+                    <span>Ventilación Mecánica</span>
+                    <strong>{{ p.ventilacion_mecanica or '—' }}</strong>
+                </div>
+                <div class="hc-field">
+                    <span>Torniquete</span>
+                    <strong>{{ p.torniquete or '—' }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #fafbfc; border: 1.5px solid #edf2f7; border-radius: 8px; padding: 12px 16px;">
+            <span style="font-size: 13px; font-weight: 700; color: #4a5568; display: block; margin-bottom: 8px;">Intervenciones (X / A / B / C / D / E)</span>
+            <div class="hc-grid-3">
+                <div class="hc-field">
+                    <span>X (Hemorragias)</span>
+                    <strong>{{ p.x_items or '—' }}</strong>
+                </div>
+                <div class="hc-field">
+                    <span>A (Vía Aérea)</span>
+                    <strong>{{ p.a_items or '—' }}</strong>
+                </div>
+                <div class="hc-field">
+                    <span>B (Ventilación)</span>
+                    <strong>{{ p.b_items or '—' }}</strong>
+                </div>
+                <div class="hc-field">
+                    <span>C (Circulación)</span>
+                    <strong>{{ p.c_items or '—' }}</strong>
+                </div>
+                <div class="hc-field">
+                    <span>D (Neurológico)</span>
+                    <strong>{{ p.d_items or '—' }}</strong>
+                </div>
+                <div class="hc-field">
+                    <span>E (Exposición)</span>
+                    <strong>{{ p.e_items or '—' }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Evolución Clínica -->
     <div class="hc-section">
