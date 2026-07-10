@@ -879,6 +879,19 @@ def init_db():
             WHERE identificacion = 'admin'
         """, (json.dumps(["Administrador"]),))
         
+    cursor.execute("DESCRIBE pacientes")
+    pacientes_cols = [row["Field"] for row in cursor.fetchall()]
+    new_paciente_cols = [
+        "inmovilizacion", "otros_procedimientos", "ventilacion_mecanica", "torniquete",
+        "x_items", "a_items", "b_items", "c_items", "d_items", "e_items"
+    ]
+    for col in new_paciente_cols:
+        if col not in pacientes_cols:
+            try:
+                conn.execute(f"ALTER TABLE pacientes ADD COLUMN {col} TEXT")
+            except Exception as e:
+                print(f"Error adding {col} to pacientes:", e)
+        
     cursor.execute("DESCRIBE checklist_tam")
     if "datos_json" not in [row["Field"] for row in cursor.fetchall()]:
         try:
