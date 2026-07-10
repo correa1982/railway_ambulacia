@@ -2918,6 +2918,8 @@ if (modalAceptar) {
         modalAceptar.disabled = true;
         if (modalCancelar) modalCancelar.disabled = true;
 
+        sessionStorage.setItem('just_finalized_hc', '1');
+
         // Inject hidden input for accion=finalizar and submit
         const hiddenAccion = document.createElement('input');
         hiddenAccion.type = 'hidden';
@@ -2970,6 +2972,11 @@ formMedico.addEventListener('submit', function(e) {
     const btn = e.submitter || document.activeElement;
     if (btn && (btn.value === 'borrador' || btn.value === 'guardar_continuar' || btn.id === 'borrador-btn' || btn.id === 'guardar-continuar-btn')) {
         btn.innerHTML = '⏳ Guardando...';
+    }
+    // Marcar en sessionStorage si se está finalizando, para que al volver con "Atrás"
+    // se redirija a un formulario en blanco en lugar de mostrar datos ya finalizados
+    if (formMedico.querySelector('input[name="accion"][value="finalizar"]')) {
+        sessionStorage.setItem('just_finalized_hc', '1');
     }
     // Siempre limpiar el paso guardado al enviar el formulario para no quedar atrapado en pasos posteriores
     const acIdInput = document.querySelector('input[name="atencion_colectiva_id"]');
@@ -3811,7 +3818,13 @@ function startDictation(btn, targetTextarea) {
 // Prevenir que el navegador restaure el formulario lleno usando el caché Atrás/Adelante (BF-Cache)
 window.addEventListener('pageshow', function(event) {
     if (event.persisted) {
-        window.location.reload();
+        // Si se finalizó recientemente, ir a formulario en blanco en lugar de recargar datos antiguos
+        if (sessionStorage.getItem('just_finalized_hc')) {
+            sessionStorage.removeItem('just_finalized_hc');
+            window.location.href = '/formulario';
+        } else {
+            window.location.reload();
+        }
     }
 });
 </script>

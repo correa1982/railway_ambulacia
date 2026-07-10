@@ -969,6 +969,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Limpiar al enviar
     form.addEventListener('submit', function() {
         localStorage.removeItem(storageKey);
+        // Marcar en sessionStorage si se está finalizando, para que al volver con "Atrás"
+        // se redirija a un formulario en blanco en lugar de mostrar datos ya finalizados
+        if (form.querySelector('input[name="accion"][value="finalizar"]')) {
+            sessionStorage.setItem('just_finalized_hc', '1');
+        }
     });
 });
 // Autocompletar paciente al ingresar ID
@@ -1596,7 +1601,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // Prevenir que el navegador restaure el formulario lleno usando el caché Atrás/Adelante (BF-Cache)
 window.addEventListener('pageshow', function(event) {
     if (event.persisted) {
-        window.location.reload();
+        // Si se finalizó recientemente, ir a formulario en blanco en lugar de recargar datos antiguos
+        if (sessionStorage.getItem('just_finalized_hc')) {
+            sessionStorage.removeItem('just_finalized_hc');
+            window.location.href = '/formulario';
+        } else {
+            window.location.reload();
+        }
     }
 });
 </script>
