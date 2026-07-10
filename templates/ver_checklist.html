@@ -316,8 +316,6 @@ tr { page-break-inside: avoid; break-inside: avoid; }
 
     {% for cat, items_list in checklist_items.items() %}
     {% if tipo != 'equipos' or cat == record.grupo_equipos %}
-    <div class="cat-title">{{ cat_icons.get(cat, '📦') }} {{ cat }}</div>
-    
     {% if tipo in ('tam', 'tab', 'pasb', 'pasm', 'avanzada') %}
         {# 2-column layout #}
         {% set ns = namespace(valid_items=[]) %}
@@ -333,14 +331,21 @@ tr { page-break-inside: avoid; break-inside: avoid; }
         
         <div class="table-wrap">
         <table class="result-table col-split-table">
-        <thead><tr>
-            <th style="width: 32%;">ÍTEM</th>
-            <th style="width: 8%; text-align: center;">RESULTADO</th>
-            <th style="width: 10%;">OBSERVACIÓN</th>
-            <th style="border-left: 2px solid #cbd5e1; padding-left: 10px; width: 32%;">ÍTEM</th>
-            <th style="width: 8%; text-align: center;">RESULTADO</th>
-            <th style="width: 10%;">OBSERVACIÓN</th>
-        </tr></thead>
+        <thead>
+            <tr>
+                <th colspan="6" style="border: none; background: none; text-align: left; padding: 0 0 10px 0;">
+                    <div class="cat-title" style="margin-bottom: 0;">{{ cat_icons.get(cat, '📦') }} {{ cat }}</div>
+                </th>
+            </tr>
+            <tr>
+                <th style="width: 32%;">ÍTEM</th>
+                <th style="width: 8%; text-align: center;">RESULTADO</th>
+                <th style="width: 10%;">OBSERVACIÓN</th>
+                <th style="border-left: 2px solid #cbd5e1; padding-left: 10px; width: 32%;">ÍTEM</th>
+                <th style="width: 8%; text-align: center;">RESULTADO</th>
+                <th style="width: 10%;">OBSERVACIÓN</th>
+            </tr>
+        </thead>
         <tbody>
         {% for i in range(rows_count) %}
             {# Left item #}
@@ -420,17 +425,24 @@ tr { page-break-inside: avoid; break-inside: avoid; }
         {# original single-column layout #}
         <div class="table-wrap">
         <table class="result-table">
-        <thead><tr>
-            <th style="width: 50%;">ÍTEM</th>
-            <th style="width: 20%; text-align: center;">
-                {% if tipo == 'calif_atencion' %}
-                    CALIFICACIÓN (1-5)
-                {% else %}
-                    RESULTADO
-                {% endif %}
-            </th>
-            <th style="width: 30%;">OBSERVACIÓN</th>
-        </tr></thead>
+        <thead>
+            <tr>
+                <th colspan="3" style="border: none; background: none; text-align: left; padding: 0 0 10px 0;">
+                    <div class="cat-title" style="margin-bottom: 0;">{{ cat_icons.get(cat, '📦') }} {{ cat }}</div>
+                </th>
+            </tr>
+            <tr>
+                <th style="width: 50%;">ÍTEM</th>
+                <th style="width: 20%; text-align: center;">
+                    {% if tipo == 'calif_atencion' %}
+                        CALIFICACIÓN (1-5)
+                    {% else %}
+                        RESULTADO
+                    {% endif %}
+                </th>
+                <th style="width: 30%;">OBSERVACIÓN</th>
+            </tr>
+        </thead>
         <tbody>
         {% for item in items_list %}
             {% set field = item.identificador %}
@@ -556,7 +568,7 @@ function descargarPDF() {
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak: { mode: ['css', 'legacy'] }
     };
     
     const doc = document.getElementById('checklist-doc');
