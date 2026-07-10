@@ -217,18 +217,12 @@
     {% else %}
     <tr>
       <td class="lbl">Ubicación / Lugar</td>
-      <td class="val">{{ record.ubicacion or '—' }}</td>
+      <td class="val"{% if tipo in ('pasm', 'pasb') %} colspan="3"{% endif %}>{{ record.ubicacion or '—' }}</td>
+      {% if tipo not in ('pasm', 'pasb') %}
       <td class="lbl">Personal APH</td>
       <td class="val">{{ record.personal_aph or '—' }}</td>
+      {% endif %}
     </tr>
-    {% if tipo == 'pasm' %}
-    <tr>
-      <td class="lbl">Personal Médico</td>
-      <td class="val">{{ record.personal_medico or '—' }}</td>
-      <td class="lbl">Personal de Enfermería</td>
-      <td class="val">{{ record.personal_enfermeria or '—' }}</td>
-    </tr>
-    {% endif %}
     <tr>
       <td class="lbl">Estado Operativo</td>
       <td class="val" colspan="3">{{ record.estado_operativo or '—' }}</td>
@@ -244,7 +238,7 @@
 </table>
 </div>
 
-{% if tipo in ('avanzada', 'tam', 'tab') and datos.get('_integrantes') %}
+{% if tipo in ('avanzada', 'tam', 'tab', 'pasm', 'pasb') and datos.get('_integrantes') %}
 <div style="margin-top: 20px;">
     <div class="cat-title">👥 Integrantes de la Tripulación / Personal</div>
     <div class="table-wrap">
