@@ -47,7 +47,9 @@ body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background: #f1f5f9;
 
 /* Header */
 .doc-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #1e6fbf; padding-bottom: 18px; margin-bottom: 24px; }
-.doc-logo img { max-height: 70px; max-width: 160px; object-fit: contain; }
+.doc-logo img { max-height: 120px; max-width: 250px; object-fit: contain; }
+tr { page-break-inside: avoid; break-inside: avoid; }
+.doc-section-title, .cat-title { page-break-after: avoid; break-after: avoid; page-break-inside: avoid; break-inside: avoid; }
 .doc-logo-placeholder { width: 100px; height: 60px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px; }
 .doc-inst { text-align: right; }
 .doc-inst .inst-name { font-size: 15px; font-weight: 800; color: #1e3a5f; }
