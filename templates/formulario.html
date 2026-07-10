@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Nuevo Registro Médico{% endblock %}
 {% block content %}
-
+<script>
+// Redirigir inmediatamente si se finalizó recientemente (antes de renderizar contenido)
+if (sessionStorage.getItem('just_finalized_hc')) {
+    sessionStorage.removeItem('just_finalized_hc');
+    window.location.replace('/formulario');
+}
+</script>
 <style>
 /* Override for form page */
 fieldset { background: #fafcff; }
@@ -3815,16 +3821,14 @@ function startDictation(btn, targetTextarea) {
     recognition.start();
 }
 
-// Prevenir que el navegador restaure el formulario lleno usando el caché Atrás/Adelante (BF-Cache)
+// Prevenir que el navegador muestre datos ya finalizados al volver con Atrás
+// (cubre BF-Cache, Service Worker cache, y recarga normal por GET)
 window.addEventListener('pageshow', function(event) {
-    if (event.persisted) {
-        // Si se finalizó recientemente, ir a formulario en blanco en lugar de recargar datos antiguos
-        if (sessionStorage.getItem('just_finalized_hc')) {
-            sessionStorage.removeItem('just_finalized_hc');
-            window.location.href = '/formulario';
-        } else {
-            window.location.reload();
-        }
+    if (sessionStorage.getItem('just_finalized_hc')) {
+        sessionStorage.removeItem('just_finalized_hc');
+        window.location.href = '/formulario';
+    } else if (event.persisted) {
+        window.location.reload();
     }
 });
 </script>
