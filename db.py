@@ -882,8 +882,13 @@ def init_db():
     cursor.execute("DESCRIBE pacientes")
     pacientes_cols = [row["Field"] for row in cursor.fetchall()]
     new_paciente_cols = [
+        "soat_aseguradora", "soat_vigencia",
+        "hora_despacho", "hora_arribo", "nombre_evento", "tipo_servicio",
+        "departamento", "municipio", "barrio", "direccion_atencion",
+        "ambito_territorial", "entorno_atencion", "clasificacion",
+        "causa_motiva_atencion", "tipo_traslado", "entorno_otro",
         "inmovilizacion", "otros_procedimientos", "ventilacion_mecanica", "torniquete",
-        "x_items", "a_items", "b_items", "c_items", "d_items", "e_items"
+        "x_items", "a_items", "b_items", "c_items", "d_items", "e_items", "datos_complementarios"
     ]
     for col in new_paciente_cols:
         if col not in pacientes_cols:
