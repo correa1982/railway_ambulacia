@@ -102,16 +102,14 @@ def calcular_diferencia_tiempo(fecha_inicio, fecha_fin):
 def format_habilitacion_filter(value):
     if not value:
         return ""
+    from markupsafe import Markup
     try:
         import json
-        from markupsafe import Markup
         data = json.loads(value)
         if isinstance(data, list):
             parts = []
             for item in data:
                 code = item.get("codigo", "").strip()
-                if ":" in code:
-                    code = code.split(":", 1)[1].strip()
                 desc = item.get("descripcion", "").strip()
                 if code and desc:
                     parts.append(f"{code} - {desc}")
@@ -122,7 +120,10 @@ def format_habilitacion_filter(value):
             return Markup("<br>").join(parts)
     except Exception:
         pass
-    return value
+    
+    parts = [p.strip() for p in str(value).split(" | ")]
+    return Markup("<br>").join(parts)
+
 
 @app.after_request
 def add_header(response):

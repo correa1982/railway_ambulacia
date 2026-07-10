@@ -162,7 +162,7 @@ body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background: #f1f5f9;
             <div class="inst-sub">NIT: {{ cfg.nit }}</div>
             {% endif %}
             {% if cfg.get('habilitacion') %}
-            <div class="inst-sub">Habilitación: {{ cfg.habilitacion|format_habilitacion }}</div>
+            <div class="inst-sub">{{ cfg.habilitacion|format_habilitacion }}</div>
             {% endif %}
         </div>
     </div>
